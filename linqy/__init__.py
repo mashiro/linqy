@@ -9,5 +9,5 @@ __version__ = '0.1'
 __author__  = 'mashiro'
 __license__ = 'MIT'
 
-from linqy.enumerable import Enumerable, make, repeat, cycle
+from linqy.enumerable import Enumerable, make, range, repeat, cycle
 

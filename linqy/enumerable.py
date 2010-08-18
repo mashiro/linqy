@@ -23,6 +23,9 @@ class Enumerable(object):
 	def __iter__(self):
 		return self._func()
 
+	def tolist(self):
+		return [item for item in self]
+
 	@linqmethod
 	def chain(self, *methods):
 		return reduce(lambda e, m: m(e), [self] + list(methods))
@@ -30,14 +33,12 @@ class Enumerable(object):
 	@lazymethod
 	@linqmethod
 	def select(self, selector):
-		evaluator = Evaluator(selector)
-		return itertools.imap(evaluator, self)
+		return itertools.imap(Evaluator(selector), self)
 
 	@lazymethod
 	@linqmethod
 	def where(self, predicate=bool):
-		evaluator = Evaluator(predicate)
-		return itertools.ifilter(evaluator, self)
+		return itertools.ifilter(Evaluator(predicate), self)
 
 	@lazymethod
 	@linqmethod
@@ -47,8 +48,7 @@ class Enumerable(object):
 	@lazymethod
 	@linqmethod
 	def takewhile(self, predicate=bool):
-		evaluator = Evaluator(predicate)
-		return itertools.takewhile(evaluator, self)
+		return itertools.takewhile(Evaluator(predicate), self)
 	
 	@lazymethod
 	@linqmethod
@@ -58,8 +58,7 @@ class Enumerable(object):
 	@lazymethod
 	@linqmethod
 	def skipwhile(self, predicate=bool):
-		evaluator = Evaluator(predicate)
-		return itertools.dropwhile(evaluator, self)
+		return itertools.dropwhile(Evaluator(predicate), self)
 	
 	@lazymethod
 	@linqmethod
@@ -68,27 +67,35 @@ class Enumerable(object):
 
 	@linqmethod
 	def all(self, predicate=bool):
-		evaluator = Evaluator(predicate)
-		for item in itertools.ifilterfalse(evaluator, self):
+		for item in itertools.ifilterfalse(Evaluator(predicate), self):
 			return False
 		return True
 
 	@linqmethod
 	def any(self, predicate=bool):
-		evaluator = Evaluator(predicate)
-		for item in itertools.ifilter(evaluator, self):
+		for item in itertools.ifilter(Evaluator(predicate), self):
 			return True
 		return False
 
+
 def make(iterable, *methods):
+	''' make enumerable object from iterable object '''
 	def inner():
 		for item in iterable:
 			yield item
 	return Enumerable(lambda: inner()).chain(*methods)
 
 @lazymethod
-def repeat(item, count):
-	return itertools.repeat(item, count)
+def range(*args):
+	# xrange have'nt next() method
+	return iter(xrange(*args))
+
+@lazymethod
+def repeat(item, count=None):
+	if count is None:
+		return itertools.repeat(item)
+	else:
+		return itertools.repeat(item, count)
 
 @lazymethod
 def cycle(iterable):
