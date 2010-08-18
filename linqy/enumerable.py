@@ -60,15 +60,11 @@ class Enumerable(object):
 
 	@linqmethod
 	def all(self, predicate=bool):
-		for item in itertools.ifilterfalse(Evaluator(predicate), self):
-			return False
-		return True
+		return iall(self, predicate)
 
 	@linqmethod
 	def any(self, predicate=bool):
-		for item in itertools.ifilter(Evaluator(predicate), self):
-			return True
-		return False
+		return iany(self, predicate)
 
 
 def make(iterable, *methods):
@@ -119,6 +115,16 @@ def iskip(iterable, count):
 @lazymethod
 def iskipwhile(iterable, predicate):
 	return itertools.dropwhile(Evaluator(predicate), iterable)
+
+def iall(iterable, predicate=bool):
+	for item in itertools.ifilterfalse(Evaluator(predicate), iterable):
+		return False
+	return True
+
+def iany(iterable, predicate=bool):
+	for item in itertools.ifilter(Evaluator(predicate), iterable):
+		return True
+	return False
 
 @lazymethod
 def izip(*iterables):

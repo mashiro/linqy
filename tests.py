@@ -81,6 +81,16 @@ class LinqyTests(unittest.TestCase):
 		e = linqy.make(seq).skipwhile(lambda n: n < 3)
 		self.assertEqual(list(e), [3,4,5])
 	
+	def test_all(self):
+		seq = [1,2,3,4,5]
+		self.assertTrue(linqy.make(seq).all(lambda n: n > 0))
+		self.assertFalse(linqy.make(seq).all(lambda n: n < 3))
+	
+	def test_any(self):
+		seq = [1,2,3,4,5]
+		self.assertTrue(linqy.make(seq).any(lambda n: n > 3))
+		self.assertFalse(linqy.make(seq).any(lambda n: n < 0))
+	
 	def test_zip(self):
 		seq1 = [1,2,3]
 		seq2 = [4,5,6]
