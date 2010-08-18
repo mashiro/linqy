@@ -7,10 +7,14 @@ from linqy.evaluator import Evaluator
 
 class LinqyTests(unittest.TestCase):
 	def test_eval(self):
-		e1 = Evaluator('item * 2')
-		e2 = Evaluator(lambda n: n * 2)
-		self.assertEqual(e1(2), 4)
-		self.assertEqual(e2(2), 4)
+		e1 = Evaluator(lambda n: n * 2)
+		e2 = Evaluator('item * 2')
+		e3 = Evaluator(lambda a ,b: a * b)
+		e4 = Evaluator('first * second')
+		self.assertEqual(e1(3), 6)
+		self.assertEqual(e2(3), 6)
+		self.assertEqual(e3(3,4), 12)
+		self.assertEqual(e4(3,4), 12)
 
 	def test_tolist(self):
 		seq = [1,2,3,4,5]
@@ -56,6 +60,33 @@ class LinqyTests(unittest.TestCase):
 		seq = [1,2,3,4,5]
 		e = linqy.make(seq).where(lambda n: n > 3)
 		self.assertEqual(list(e), [4,5])
+	
+	def test_take(self):
+		seq = [1,2,3,4,5]
+		e = linqy.make(seq).take(3)
+		self.assertEqual(list(e), [1,2,3])
+
+	def test_takewhile(self):
+		seq = [1,2,3,4,5]
+		e = linqy.make(seq).takewhile(lambda n: n < 3)
+		self.assertEqual(list(e), [1,2])
+
+	def test_skip(self):
+		seq = [1,2,3,4,5]
+		e = linqy.make(seq).skip(3)
+		self.assertEqual(list(e), [4,5])
+	
+	def test_skipwhile(self):
+		seq = [1,2,3,4,5]
+		e = linqy.make(seq).skipwhile(lambda n: n < 3)
+		self.assertEqual(list(e), [3,4,5])
+	
+	def test_zip(self):
+		seq1 = [1,2,3]
+		seq2 = [4,5,6]
+		e = linqy.make(seq1).zip(seq2)
+		self.assertEqual(list(e), [(1,4),(2,5),(3,6)])
+
 
 if __name__ == '__main__':
 	unittest.main()

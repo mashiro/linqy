@@ -24,46 +24,39 @@ class Enumerable(object):
 		return self._func()
 
 	def tolist(self):
-		return [item for item in self]
+		return list(self)
 
 	@linqmethod
-	def chain(self, *methods):
+	def combine(self, *methods):
 		return reduce(lambda e, m: m(e), [self] + list(methods))
 
-	@lazymethod
 	@linqmethod
 	def select(self, selector):
-		return itertools.imap(Evaluator(selector), self)
+		return iselect(self, selector)
 
-	@lazymethod
 	@linqmethod
 	def where(self, predicate=bool):
-		return itertools.ifilter(Evaluator(predicate), self)
+		return iwhere(self, predicate)
 
-	@lazymethod
 	@linqmethod
 	def take(self, count):
-		return itertools.islice(self, count)
+		return itake(self, count)
 
-	@lazymethod
 	@linqmethod
 	def takewhile(self, predicate=bool):
-		return itertools.takewhile(Evaluator(predicate), self)
+		return itakewhile(self, predicate)
 	
-	@lazymethod
 	@linqmethod
 	def skip(self, count):
-		return itertools.islice(self, count, None)
+		return iskip(self, count)
 
-	@lazymethod
 	@linqmethod
 	def skipwhile(self, predicate=bool):
-		return itertools.dropwhile(Evaluator(predicate), self)
+		return iskipwhile(self, predicate)
 	
-	@lazymethod
 	@linqmethod
-	def zip(self, second):
-		return itertools.izip(self, second)
+	def zip(self, *iterables):
+		return izip(self, *iterables)
 
 	@linqmethod
 	def all(self, predicate=bool):
@@ -83,7 +76,7 @@ def make(iterable, *methods):
 	def inner():
 		for item in iterable:
 			yield item
-	return Enumerable(lambda: inner()).chain(*methods)
+	return Enumerable(lambda: inner()).combine(*methods)
 
 @lazymethod
 def range(*args):
@@ -100,4 +93,34 @@ def repeat(item, count=None):
 @lazymethod
 def cycle(iterable):
 	return itertools.cycle(iterable)
+
+
+
+@lazymethod
+def iselect(iterable, selector):
+	return itertools.imap(Evaluator(selector), iterable)
+
+@lazymethod
+def iwhere(iterable, predicate):
+	return itertools.ifilter(Evaluator(predicate), iterable)
+
+@lazymethod
+def itake(iterable, count):
+	return itertools.islice(iterable, count)
+
+@lazymethod
+def itakewhile(iterable, predicate):
+	return itertools.takewhile(Evaluator(predicate), iterable)
+
+@lazymethod
+def iskip(iterable, count):
+	return itertools.islice(iterable, count, None)
+
+@lazymethod
+def iskipwhile(iterable, predicate):
+	return itertools.dropwhile(Evaluator(predicate), iterable)
+
+@lazymethod
+def izip(*iterables):
+	return itertools.izip(*iterables)
 
