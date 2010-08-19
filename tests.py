@@ -28,26 +28,39 @@ class LinqyTests(unittest.TestCase):
 		self.assertEqual(list(e), seq)
 	
 	def test_range(self):
-		e1 = linqy.range(5)
-		e2 = linqy.range(5,10)
-		e3 = linqy.range(0,10,2)
+		e1 = linqy.irange(5)
+		e2 = linqy.irange(5,10)
+		e3 = linqy.irange(0,10,2)
+		e4 = linqy.irange(0,-5,-1)
 		self.assertTrue(isinstance(e1, Enumerable))
 		self.assertTrue(isinstance(e2, Enumerable))
 		self.assertTrue(isinstance(e3, Enumerable))
 		self.assertEqual(list(e1), [0,1,2,3,4])
 		self.assertEqual(list(e2), [5,6,7,8,9])
 		self.assertEqual(list(e3), [0,2,4,6,8])
+		self.assertEqual(list(e4), [0,-1,-2,-3,-4])
+	
+	def test_count(self):
+		e1 = linqy.icount().take(5)
+		e2 = linqy.icount(1).take(5)
+		e3 = linqy.icount(2,2).take(5)
+		self.assertTrue(isinstance(e1, Enumerable))
+		self.assertTrue(isinstance(e2, Enumerable))
+		self.assertTrue(isinstance(e3, Enumerable))
+		self.assertEqual(list(e1), [0,1,2,3,4])
+		self.assertEqual(list(e2), [1,2,3,4,5])
+		self.assertEqual(list(e3), [2,4,6,8,10])
 
 	def test_repeat(self):
-		e1 = linqy.repeat(1, 5)
-		e2 = linqy.repeat(1).take(5)
+		e1 = linqy.irepeat(1, 5)
+		e2 = linqy.irepeat(1).take(5)
 		self.assertTrue(isinstance(e1, Enumerable))
 		self.assertEqual(list(e1), [1,1,1,1,1])
 		self.assertTrue(isinstance(e2, Enumerable))
 		self.assertEqual(list(e2), [1,1,1,1,1])
 
 	def test_cycle(self):
-		e = linqy.cycle([1,2,3]).take(10)
+		e = linqy.icycle([1,2,3]).take(10)
 		self.assertTrue(isinstance(e, Enumerable))
 		self.assertEqual(list(e), [1,2,3,1,2,3,1,2,3,1])
 
@@ -96,6 +109,12 @@ class LinqyTests(unittest.TestCase):
 		seq2 = [4,5,6]
 		e = linqy.make(seq1).zip(seq2)
 		self.assertEqual(list(e), [(1,4),(2,5),(3,6)])
+	
+	def test_concat(self):
+		seq1 = [1,2,3]
+		seq2 = [4,5,6]
+		e = linqy.make(seq1).concat(seq2)
+		self.assertEqual(list(e), [1,2,3,4,5,6])
 
 
 if __name__ == '__main__':

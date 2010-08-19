@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
+from linqy.utils import findattr
 
+# env {{{1
 __fieldnames__ = [
 	['item1', 'first', 'item'],
 	['item2', 'second'],
@@ -13,7 +15,10 @@ __fieldnames__ = [
 	['item9']
 ]
 
-class Evaluator(object):
+# hack {{{1
+basestring = findattr((__builtins__, 'basestring'), (__builtins__, 'str'))
+
+class Evaluator(object): # {{{1
 	def __init__(self, source):
 		if isinstance(source, basestring):
 			self.source = compile(source, '<string>', 'eval')

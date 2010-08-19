@@ -1,22 +1,36 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 import itertools
+import functools
 from linqy.evaluator import Evaluator
+from linqy.utils import findattr
 
+# hack {{{1
+functools.reduce = findattr((functools, 'reduce'), (__builtins__, 'reduce'))
+itertools.izip = findattr((itertools, 'izip'), (__builtins__, 'zip'))
+itertools.ifilter = findattr((itertools, 'ifilter'), (__builtins__, 'filter'))
+itertools.imap = findattr((itertools, 'imap'), (__builtins__, 'map'))
+itertools.ifilterfalse = findattr((itertools, 'ifilterfalse'), (itertools, 'filterfalse'))
+
+
+# decorator {{{1
 def linqmethod(func):
-	def outer(*args):
+	@functools.wraps(func)
+	def outer(*args, **kargs):
 		def inner(enumerable):
-			return getattr(enumerable, func.__name__)(*args)
+			return getattr(enumerable, func.__name__)(*args, **kargs)
 		return inner
 	globals().__setitem__(func.__name__, outer)
 	return func
 
 def lazymethod(func):
-	def inner(self, *args):
-		return Enumerable(lambda: func(self, *args))
+	@functools.wraps(func)
+	def inner(*args, **kargs):
+		return Enumerable(lambda: func(*args, **kargs))
 	return inner
 
-class Enumerable(object):
+
+class Enumerable(object): # {{{1
 	def __init__(self, func):
 		self._func = func
 	
@@ -28,7 +42,7 @@ class Enumerable(object):
 
 	@linqmethod
 	def combine(self, *methods):
-		return reduce(lambda e, m: m(e), [self] + list(methods))
+		return functools.reduce(lambda e, m: m(e), [self] + list(methods))
 
 	@linqmethod
 	def select(self, selector):
@@ -53,10 +67,14 @@ class Enumerable(object):
 	@linqmethod
 	def skipwhile(self, predicate=bool):
 		return iskipwhile(self, predicate)
-	
+
 	@linqmethod
 	def zip(self, *iterables):
 		return izip(self, *iterables)
+
+	@linqmethod
+	def concat(self, *iterables):
+		return iconcat(self, *iterables)
 
 	@linqmethod
 	def all(self, predicate=bool):
@@ -65,32 +83,38 @@ class Enumerable(object):
 	@linqmethod
 	def any(self, predicate=bool):
 		return iany(self, predicate)
-
-
+	
+# global {{{1
 def make(iterable, *methods):
-	''' make enumerable object from iterable object '''
+	''' make enumerable from iterable '''
 	def inner():
 		for item in iterable:
 			yield item
 	return Enumerable(lambda: inner()).combine(*methods)
 
 @lazymethod
-def range(*args):
-	# xrange have'nt next() method
-	return iter(xrange(*args))
+def irange(*args):
+	''' make enumerable range '''
+	s = slice(*args)
+	return iter(range(s.start or 0, s.stop or sys.maxsize, s.step or 1))
 
 @lazymethod
-def repeat(item, count=None):
+def icount(start=0, step=1):
+	n = start
+	while True:
+		yield n
+		n += step
+
+@lazymethod
+def irepeat(item, count=None):
 	if count is None:
 		return itertools.repeat(item)
 	else:
 		return itertools.repeat(item, count)
 
 @lazymethod
-def cycle(iterable):
+def icycle(iterable):
 	return itertools.cycle(iterable)
-
-
 
 @lazymethod
 def iselect(iterable, selector):
@@ -116,6 +140,14 @@ def iskip(iterable, count):
 def iskipwhile(iterable, predicate):
 	return itertools.dropwhile(Evaluator(predicate), iterable)
 
+@lazymethod
+def izip(*iterables):
+	return itertools.izip(*iterables)
+
+@lazymethod
+def iconcat(*iterables):
+	return itertools.chain(*iterables)
+
 def iall(iterable, predicate=bool):
 	for item in itertools.ifilterfalse(Evaluator(predicate), iterable):
 		return False
@@ -126,7 +158,4 @@ def iany(iterable, predicate=bool):
 		return True
 	return False
 
-@lazymethod
-def izip(*iterables):
-	return itertools.izip(*iterables)
 
