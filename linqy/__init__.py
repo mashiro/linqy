@@ -5,9 +5,9 @@
 	Linqy - LINQ like library for Python
 '''
 
-__version__ = '0.1'
-__author__  = 'mashiro'
+__author__ = 'mashiro'
 __license__ = 'MIT'
+__version__ = '0.1'
 
 from linqy.enumerable import *
 
