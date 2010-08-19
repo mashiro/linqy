@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-import itertools
+# imports {{{1
 import functools
+import itertools
 from linqy.evaluator import Evaluator
 from linqy.utils import findattr
 
@@ -13,7 +14,7 @@ itertools.imap = findattr((itertools, 'imap'), (__builtins__, 'map'))
 itertools.ifilterfalse = findattr((itertools, 'ifilterfalse'), (itertools, 'filterfalse'))
 
 
-# decorator {{{1
+# decorators {{{1
 def linqmethod(func):
 	@functools.wraps(func)
 	def outer(*args, **kargs):
@@ -30,61 +31,7 @@ def lazymethod(func):
 	return inner
 
 
-class Enumerable(object): # {{{1
-	def __init__(self, func):
-		self._func = func
-	
-	def __iter__(self):
-		return self._func()
-
-	def tolist(self):
-		return list(self)
-
-	@linqmethod
-	def combine(self, *methods):
-		return functools.reduce(lambda e, m: m(e), [self] + list(methods))
-
-	@linqmethod
-	def select(self, selector):
-		return iselect(self, selector)
-
-	@linqmethod
-	def where(self, predicate=bool):
-		return iwhere(self, predicate)
-
-	@linqmethod
-	def take(self, count):
-		return itake(self, count)
-
-	@linqmethod
-	def takewhile(self, predicate=bool):
-		return itakewhile(self, predicate)
-	
-	@linqmethod
-	def skip(self, count):
-		return iskip(self, count)
-
-	@linqmethod
-	def skipwhile(self, predicate=bool):
-		return iskipwhile(self, predicate)
-
-	@linqmethod
-	def zip(self, *iterables):
-		return izip(self, *iterables)
-
-	@linqmethod
-	def concat(self, *iterables):
-		return iconcat(self, *iterables)
-
-	@linqmethod
-	def all(self, predicate=bool):
-		return iall(self, predicate)
-
-	@linqmethod
-	def any(self, predicate=bool):
-		return iany(self, predicate)
-	
-# global {{{1
+# functios {{{1
 def make(iterable, *methods):
 	''' make enumerable from iterable '''
 	def inner():
@@ -159,3 +106,57 @@ def iany(iterable, predicate=bool):
 	return False
 
 
+class Enumerable(object): # {{{1
+	def __init__(self, func):
+		self._func = func
+	
+	def __iter__(self):
+		return self._func()
+
+	def tolist(self):
+		return list(self)
+
+	@linqmethod
+	def combine(self, *methods):
+		return functools.reduce(lambda e, m: m(e), [self] + list(methods))
+
+	@linqmethod
+	def select(self, selector):
+		return iselect(self, selector)
+
+	@linqmethod
+	def where(self, predicate=bool):
+		return iwhere(self, predicate)
+
+	@linqmethod
+	def take(self, count):
+		return itake(self, count)
+
+	@linqmethod
+	def takewhile(self, predicate=bool):
+		return itakewhile(self, predicate)
+	
+	@linqmethod
+	def skip(self, count):
+		return iskip(self, count)
+
+	@linqmethod
+	def skipwhile(self, predicate=bool):
+		return iskipwhile(self, predicate)
+
+	@linqmethod
+	def zip(self, *iterables):
+		return izip(self, *iterables)
+
+	@linqmethod
+	def concat(self, *iterables):
+		return iconcat(self, *iterables)
+
+	@linqmethod
+	def all(self, predicate=bool):
+		return iall(self, predicate)
+
+	@linqmethod
+	def any(self, predicate=bool):
+		return iany(self, predicate)
+	

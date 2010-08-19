@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
+# imports {{{1
 from linqy.utils import findattr
+
+
+# hack {{{1
+basestring = findattr((__builtins__, 'basestring'), (__builtins__, 'str'))
+
 
 # env {{{1
 __fieldnames__ = [
@@ -15,8 +21,6 @@ __fieldnames__ = [
 	['item9']
 ]
 
-# hack {{{1
-basestring = findattr((__builtins__, 'basestring'), (__builtins__, 'str'))
 
 class Evaluator(object): # {{{1
 	def __init__(self, source):

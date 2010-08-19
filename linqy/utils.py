@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 
-class AttributeNotFoundError(Exception): pass
+class AttributeNotFoundError(Exception):
+	pass
 
 def findattr(*candidates):
 	for module, name in candidates:
