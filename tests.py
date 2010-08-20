@@ -16,10 +16,10 @@ class LinqyTests(unittest.TestCase):
 		self.assertEqual(e3(3,4), 12)
 		self.assertEqual(e4(3,4), 12)
 
-	def test_tolist(self):
+	def test_to_list(self):
 		seq = [1,2,3,4,5]
 		e = linqy.make(seq)
-		self.assertEqual(e.tolist(), seq)
+		self.assertEqual(e.to_list(), seq)
 
 	def test_make(self):
 		seq = [1,2,3,4,5]

@@ -127,7 +127,7 @@ class Enumerable(object): # {{{1
 	def __iter__(self):
 		return self._func()
 
-	def tolist(self):
+	def to_list(self):
 		return list(self)
 
 	@linqmethod
