@@ -66,8 +66,15 @@ class LinqyTests(unittest.TestCase):
 
 	def test_select(self):
 		seq = [1,2,3,4,5]
-		e = linqy.make(seq).select(lambda n: n * 2)
-		self.assertEqual(list(e), [2,4,6,8,10])
+		e1 = linqy.make(seq).select(lambda n: n * 2)
+		e2 = linqy.make(seq).select()
+		self.assertEqual(list(e1), [2,4,6,8,10])
+		self.assertEqual(list(e2), [1,2,3,4,5])
+	
+	def test_select_many(self):
+		seq = [[1,2],[3,4],[5,6]]
+		e = linqy.make(seq).select_many(lambda n: n)
+		self.assertEqual(list(e), [1,2,3,4,5,6])
 
 	def test_where(self):
 		seq = [1,2,3,4,5]
@@ -79,9 +86,9 @@ class LinqyTests(unittest.TestCase):
 		e = linqy.make(seq).take(3)
 		self.assertEqual(list(e), [1,2,3])
 
-	def test_takewhile(self):
+	def test_take_while(self):
 		seq = [1,2,3,4,5]
-		e = linqy.make(seq).takewhile(lambda n: n < 3)
+		e = linqy.make(seq).take_while(lambda n: n < 3)
 		self.assertEqual(list(e), [1,2])
 
 	def test_skip(self):
@@ -89,9 +96,9 @@ class LinqyTests(unittest.TestCase):
 		e = linqy.make(seq).skip(3)
 		self.assertEqual(list(e), [4,5])
 	
-	def test_skipwhile(self):
+	def test_skip_while(self):
 		seq = [1,2,3,4,5]
-		e = linqy.make(seq).skipwhile(lambda n: n < 3)
+		e = linqy.make(seq).skip_while(lambda n: n < 3)
 		self.assertEqual(list(e), [3,4,5])
 	
 	def test_all(self):
@@ -106,9 +113,15 @@ class LinqyTests(unittest.TestCase):
 	
 	def test_zip(self):
 		seq1 = [1,2,3]
-		seq2 = [4,5,6]
+		seq2 = [4,5]
 		e = linqy.make(seq1).zip(seq2)
-		self.assertEqual(list(e), [(1,4),(2,5),(3,6)])
+		self.assertEqual(list(e), [(1,4),(2,5)])
+
+	def test_zip_longest(self):
+		seq1 = [1,2,3]
+		seq2 = [4,5]
+		e = linqy.make(seq1).zip_longest(seq2)
+		self.assertEqual(list(e), [(1,4),(2,5),(3,None)])
 	
 	def test_concat(self):
 		seq1 = [1,2,3]

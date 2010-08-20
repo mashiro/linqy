@@ -64,8 +64,18 @@ def icycle(iterable):
 	return itertools.cycle(iterable)
 
 @lazymethod
-def iselect(iterable, selector):
-	return itertools.imap(Evaluator(selector), iterable)
+def iselect(iterable, selector=None):
+	if selector is None:
+		for item in iterable:
+			yield item
+	else:
+		evaluator = Evaluator(selector)
+		for item in iterable:
+			yield evaluator(item)
+
+@lazymethod
+def iselect_many(iterable, selector=None):
+	return itertools.chain.from_iterable(iselect(iterable, selector))
 
 @lazymethod
 def iwhere(iterable, predicate):
@@ -76,7 +86,7 @@ def itake(iterable, count):
 	return itertools.islice(iterable, count)
 
 @lazymethod
-def itakewhile(iterable, predicate):
+def itake_while(iterable, predicate):
 	return itertools.takewhile(Evaluator(predicate), iterable)
 
 @lazymethod
@@ -84,12 +94,16 @@ def iskip(iterable, count):
 	return itertools.islice(iterable, count, None)
 
 @lazymethod
-def iskipwhile(iterable, predicate):
+def iskip_while(iterable, predicate):
 	return itertools.dropwhile(Evaluator(predicate), iterable)
 
 @lazymethod
 def izip(*iterables):
 	return itertools.izip(*iterables)
+
+@lazymethod
+def izip_longest(*iterables):
+	return itertools.izip_longest(*iterables)
 
 @lazymethod
 def iconcat(*iterables):
@@ -121,8 +135,12 @@ class Enumerable(object): # {{{1
 		return functools.reduce(lambda e, m: m(e), [self] + list(methods))
 
 	@linqmethod
-	def select(self, selector):
+	def select(self, selector=None):
 		return iselect(self, selector)
+
+	@linqmethod
+	def select_many(self, selector=None):
+		return iselect_many(self, selector)
 
 	@linqmethod
 	def where(self, predicate=bool):
@@ -133,20 +151,24 @@ class Enumerable(object): # {{{1
 		return itake(self, count)
 
 	@linqmethod
-	def takewhile(self, predicate=bool):
-		return itakewhile(self, predicate)
+	def take_while(self, predicate=bool):
+		return itake_while(self, predicate)
 	
 	@linqmethod
 	def skip(self, count):
 		return iskip(self, count)
 
 	@linqmethod
-	def skipwhile(self, predicate=bool):
-		return iskipwhile(self, predicate)
+	def skip_while(self, predicate=bool):
+		return iskip_while(self, predicate)
 
 	@linqmethod
 	def zip(self, *iterables):
 		return izip(self, *iterables)
+
+	@linqmethod
+	def zip_longest(self, *iterables):
+		return izip_longest(self, *iterables)
 
 	@linqmethod
 	def concat(self, *iterables):
