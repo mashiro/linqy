@@ -73,8 +73,10 @@ class LinqyTests(unittest.TestCase):
 	
 	def test_select_many(self):
 		seq = [[1,2],[3,4],[5,6]]
-		e = linqy.make(seq).select_many(lambda n: n)
-		self.assertEqual(list(e), [1,2,3,4,5,6])
+		e1 = linqy.make(seq).select_many(lambda n: n)
+		e2 = linqy.make(seq).select_many()
+		self.assertEqual(list(e1), [1,2,3,4,5,6])
+		self.assertEqual(list(e2), [1,2,3,4,5,6])
 
 	def test_where(self):
 		seq = [1,2,3,4,5]
@@ -101,27 +103,11 @@ class LinqyTests(unittest.TestCase):
 		e = linqy.make(seq).skip_while(lambda n: n < 3)
 		self.assertEqual(list(e), [3,4,5])
 	
-	def test_all(self):
-		seq = [1,2,3,4,5]
-		self.assertTrue(linqy.make(seq).all(lambda n: n > 0))
-		self.assertFalse(linqy.make(seq).all(lambda n: n < 3))
-	
-	def test_any(self):
-		seq = [1,2,3,4,5]
-		self.assertTrue(linqy.make(seq).any(lambda n: n > 3))
-		self.assertFalse(linqy.make(seq).any(lambda n: n < 0))
-	
 	def test_zip(self):
 		seq1 = [1,2,3]
 		seq2 = [4,5]
 		e = linqy.make(seq1).zip(seq2)
 		self.assertEqual(list(e), [(1,4),(2,5)])
-
-	def test_zip_longest(self):
-		seq1 = [1,2,3]
-		seq2 = [4,5]
-		e = linqy.make(seq1).zip_longest(seq2)
-		self.assertEqual(list(e), [(1,4),(2,5),(3,None)])
 	
 	def test_concat(self):
 		seq1 = [1,2,3]
@@ -129,6 +115,20 @@ class LinqyTests(unittest.TestCase):
 		e = linqy.make(seq1).concat(seq2)
 		self.assertEqual(list(e), [1,2,3,4,5,6])
 
+	def test_all(self):
+		seq = [1,2,3,4,5]
+		self.assertTrue(linqy.make(seq).all())
+		self.assertTrue(linqy.make([]).all())
+		self.assertTrue(linqy.make(seq).all(lambda n: n > 0))
+		self.assertFalse(linqy.make(seq).all(lambda n: n < 3))
+	
+	def test_any(self):
+		seq = [1,2,3,4,5]
+		self.assertTrue(linqy.make(seq).any())
+		self.assertFalse(linqy.make([]).any())
+		self.assertTrue(linqy.make(seq).any(lambda n: n > 3))
+		self.assertFalse(linqy.make(seq).any(lambda n: n < 0))
+	
 
 if __name__ == '__main__':
 	unittest.main()

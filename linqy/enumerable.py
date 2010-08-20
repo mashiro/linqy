@@ -65,20 +65,18 @@ def icycle(iterable):
 
 @lazymethod
 def iselect(iterable, selector=None):
-	if selector is None:
-		for item in iterable:
-			yield item
-	else:
-		evaluator = Evaluator(selector)
-		for item in iterable:
-			yield evaluator(item)
+	evaluator = Evaluator(selector)
+	for item in iterable:
+		yield evaluator(item)
 
 @lazymethod
 def iselect_many(iterable, selector=None):
-	return itertools.chain.from_iterable(iselect(iterable, selector))
+	for it in iselect(iterable, selector):
+		for item in it:
+			yield item
 
 @lazymethod
-def iwhere(iterable, predicate):
+def iwhere(iterable, predicate=bool):
 	return itertools.ifilter(Evaluator(predicate), iterable)
 
 @lazymethod
@@ -86,7 +84,7 @@ def itake(iterable, count):
 	return itertools.islice(iterable, count)
 
 @lazymethod
-def itake_while(iterable, predicate):
+def itake_while(iterable, predicate=bool):
 	return itertools.takewhile(Evaluator(predicate), iterable)
 
 @lazymethod
@@ -94,16 +92,12 @@ def iskip(iterable, count):
 	return itertools.islice(iterable, count, None)
 
 @lazymethod
-def iskip_while(iterable, predicate):
+def iskip_while(iterable, predicate=bool):
 	return itertools.dropwhile(Evaluator(predicate), iterable)
 
 @lazymethod
 def izip(*iterables):
 	return itertools.izip(*iterables)
-
-@lazymethod
-def izip_longest(*iterables):
-	return itertools.izip_longest(*iterables)
 
 @lazymethod
 def iconcat(*iterables):
@@ -118,7 +112,6 @@ def iany(iterable, predicate=bool):
 	for item in itertools.ifilter(Evaluator(predicate), iterable):
 		return True
 	return False
-
 
 class Enumerable(object): # {{{1
 	def __init__(self, func):
@@ -165,10 +158,6 @@ class Enumerable(object): # {{{1
 	@linqmethod
 	def zip(self, *iterables):
 		return izip(self, *iterables)
-
-	@linqmethod
-	def zip_longest(self, *iterables):
-		return izip_longest(self, *iterables)
 
 	@linqmethod
 	def concat(self, *iterables):

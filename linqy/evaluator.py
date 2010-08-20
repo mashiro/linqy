@@ -32,11 +32,17 @@ class Evaluator(object): # {{{1
 			self.is_code = False
 	
 	def __call__(self, *args):
-		if self.is_code:
-			for i, arg in enumerate(args):
-				for name in __fieldnames__[i]:
-					locals().__setitem__(name, arg)
-			return eval(self.source)
+		if self.source is None:
+			if len(args) == 1:
+				return args[0]
+			else:
+				return tuple(*args)
 		else:
-			return self.source(*args)
+			if self.is_code:
+				for i, arg in enumerate(args):
+					for name in __fieldnames__[i]:
+						locals().__setitem__(name, arg)
+				return eval(self.source)
+			else:
+				return self.source(*args)
 
