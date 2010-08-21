@@ -126,6 +126,15 @@ def iany(iterable, pred=bool):
 		return True
 	return False
 
+def ielement_at(iterable, index):
+	try:
+		return next(itertools.islice(iterable, index, index+1))
+	except StopIteration:
+		raise IndexError
+
+def inth(iterable, index):
+	return ielement_at(iterable, index)
+
 def ifirst(iterable, pred=None):
 	evaluator = Evaluator(pred)
 	it = iter(iterable)
@@ -139,6 +148,7 @@ def ifirst(iterable, pred=None):
 
 def ilast(iterable, pred=None):
 	return ifirst(ireverse(iterable), pred)
+
 
 
 class Enumerable(object): # {{{1
@@ -206,6 +216,14 @@ class Enumerable(object): # {{{1
 	@linqmethod
 	def any(self, pred=bool):
 		return iany(self, pred)
+
+	@linqmethod
+	def element_at(self, index):
+		return ielement_at(self, index)
+
+	@linqmethod
+	def nth(self, index):
+		return inth(self, index)
 
 	@linqmethod
 	def first(self, pred=None):

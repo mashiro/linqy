@@ -141,6 +141,16 @@ class LinqyTests(unittest.TestCase):
 		self.assertTrue(linqy.make(seq).any(lambda n: n > 3))
 		self.assertFalse(linqy.make(seq).any(lambda n: n < 0))
 
+	def test_element_at(self):
+		seq = [1,2,3,4,5]
+		self.assertEqual(linqy.make(seq).element_at(2), 3)
+		self.assertRaises(IndexError, lambda: linqy.make(seq).element_at(5))
+
+	def test_nth(self):
+		seq = [1,2,3,4,5]
+		self.assertEqual(linqy.make(seq).nth(2), 3)
+		self.assertRaises(IndexError, lambda: linqy.make(seq).nth(5))
+
 	def test_first(self):
 		seq = [1,2,3,4,5]
 		self.assertEqual(linqy.make(seq).first(), 1)
