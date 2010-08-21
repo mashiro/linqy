@@ -13,6 +13,7 @@ itertools.ifilter = findattr((itertools, 'ifilter'), (__builtins__, 'filter'))
 itertools.imap = findattr((itertools, 'imap'), (__builtins__, 'map'))
 itertools.ifilterfalse = findattr((itertools, 'ifilterfalse'), (itertools, 'filterfalse'))
 next = findattr((__builtins__, 'next'), lambda x: x.next())
+xrange = findattr((__builtins__, 'xrange'), range)
 
 
 # decorators {{{1
@@ -44,7 +45,7 @@ def make(iterable, *methods):
 def irange(*args):
 	''' make enumerable range '''
 	s = slice(*args)
-	return iter(range(s.start or 0, s.stop or sys.maxsize, s.step or 1))
+	return iter(xrange(s.start or 0, s.stop or sys.maxsize, s.step or 1))
 
 @lazymethod
 def icount(start=0, step=1):
