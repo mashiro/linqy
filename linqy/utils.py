@@ -5,12 +5,16 @@ class AttributeNotFoundError(Exception):
 	pass
 
 def findattr(*candidates):
-	for module, name in candidates:
-		if isinstance(module, dict):
-			if name in module:
-				return module[name]
+	for candidate in candidates:
+		if isinstance(candidate, tuple):
+			module, name = candidate
+			if isinstance(module, dict):
+				if name in module:
+					return module[name]
+			else:
+				if hasattr(module, name):
+					return getattr(module, name)
 		else:
-			if hasattr(module, name):
-				return getattr(module, name)
+			return candidate
 	raise AttributeNotFoundError
 

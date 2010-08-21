@@ -12,6 +12,7 @@ itertools.izip = findattr((itertools, 'izip'), (__builtins__, 'zip'))
 itertools.ifilter = findattr((itertools, 'ifilter'), (__builtins__, 'filter'))
 itertools.imap = findattr((itertools, 'imap'), (__builtins__, 'map'))
 itertools.ifilterfalse = findattr((itertools, 'ifilterfalse'), (itertools, 'filterfalse'))
+next = findattr((__builtins__, 'next'), lambda x: x.next())
 
 
 # decorators {{{1
@@ -76,24 +77,24 @@ def iselect_many(iterable, selector=None):
 			yield item
 
 @lazymethod
-def iwhere(iterable, predicate=bool):
-	return itertools.ifilter(Evaluator(predicate), iterable)
+def iwhere(iterable, pred=bool):
+	return itertools.ifilter(Evaluator(pred), iterable)
 
 @lazymethod
 def itake(iterable, count):
 	return itertools.islice(iterable, count)
 
 @lazymethod
-def itake_while(iterable, predicate=bool):
-	return itertools.takewhile(Evaluator(predicate), iterable)
+def itake_while(iterable, pred=bool):
+	return itertools.takewhile(Evaluator(pred), iterable)
 
 @lazymethod
 def iskip(iterable, count):
 	return itertools.islice(iterable, count, None)
 
 @lazymethod
-def iskip_while(iterable, predicate=bool):
-	return itertools.dropwhile(Evaluator(predicate), iterable)
+def iskip_while(iterable, pred=bool):
+	return itertools.dropwhile(Evaluator(pred), iterable)
 
 @lazymethod
 def izip(*iterables):
@@ -104,26 +105,40 @@ def iconcat(*iterables):
 	return itertools.chain(*iterables)
 
 @lazymethod
+def iorder_by(iterable, key=None):
+	if key is None:
+		return iter(sorted(iterable, key=None))
+	else:
+		return iter(sorted(iterable, key=Evaluator(key)))
+
+@lazymethod
 def ireverse(iterable):
 	return reversed(list(iterable))
 
-def iall(iterable, predicate=bool):
-	for item in itertools.ifilterfalse(Evaluator(predicate), iterable):
+def iall(iterable, pred=bool):
+	for item in itertools.ifilterfalse(Evaluator(pred), iterable):
 		return False
 	return True
 
-def iany(iterable, predicate=bool):
-	for item in itertools.ifilter(Evaluator(predicate), iterable):
+def iany(iterable, pred=bool):
+	for item in itertools.ifilter(Evaluator(pred), iterable):
 		return True
 	return False
 
-#def ifirst(iterable, predicate=None):
-#	evaluator = Evaluator(predicate)
-#	it = iter(iterable)
-#	while True:
-#		item = next(it)
-#		if predicate is None or evaluator(item):
-#			return it
+def ifirst(iterable, pred=None):
+	evaluator = Evaluator(pred)
+	it = iter(iterable)
+	try:
+		while True:
+			item = next(it)
+			if pred is None or evaluator(item):
+				return item
+	except StopIteration:
+		raise IndexError
+
+def ilast(iterable, pred=None):
+	return ifirst(ireverse(iterable), pred)
+
 
 class Enumerable(object): # {{{1
 	def __init__(self, func):
@@ -148,24 +163,24 @@ class Enumerable(object): # {{{1
 		return iselect_many(self, selector)
 
 	@linqmethod
-	def where(self, predicate=bool):
-		return iwhere(self, predicate)
+	def where(self, pred=bool):
+		return iwhere(self, pred)
 
 	@linqmethod
 	def take(self, count):
 		return itake(self, count)
 
 	@linqmethod
-	def take_while(self, predicate=bool):
-		return itake_while(self, predicate)
+	def take_while(self, pred=bool):
+		return itake_while(self, pred)
 	
 	@linqmethod
 	def skip(self, count):
 		return iskip(self, count)
 
 	@linqmethod
-	def skip_while(self, predicate=bool):
-		return iskip_while(self, predicate)
+	def skip_while(self, pred=bool):
+		return iskip_while(self, pred)
 
 	@linqmethod
 	def zip(self, *iterables):
@@ -180,10 +195,22 @@ class Enumerable(object): # {{{1
 		return ireverse(self)
 
 	@linqmethod
-	def all(self, predicate=bool):
-		return iall(self, predicate)
+	def order_by(self, key=None):
+		return iorder_by(self, key=key)
 
 	@linqmethod
-	def any(self, predicate=bool):
-		return iany(self, predicate)
+	def all(self, pred=bool):
+		return iall(self, pred)
+
+	@linqmethod
+	def any(self, pred=bool):
+		return iany(self, pred)
+
+	@linqmethod
+	def first(self, pred=None):
+		return ifirst(self, pred)
+
+	@linqmethod
+	def last(self, pred=None):
+		return ilast(self, pred)
 	

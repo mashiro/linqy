@@ -115,6 +115,13 @@ class LinqyTests(unittest.TestCase):
 		e = linqy.make(seq1).concat(seq2)
 		self.assertEqual(list(e), [1,2,3,4,5,6])
 
+	def test_order_by(self):
+		seq = [[2,6],[4,3],[5,1]]
+		e1 = linqy.make(seq).order_by()
+		e2 = linqy.make(seq).order_by(lambda x: x[1])
+		self.assertEqual(list(e1), [[2,6],[4,3],[5,1]])
+		self.assertEqual(list(e2), [[5,1],[4,3],[2,6]])
+
 	def test_reverse(self):
 		seq = [1,2,3,4,5]
 		e = linqy.make(seq).reverse()
@@ -133,6 +140,18 @@ class LinqyTests(unittest.TestCase):
 		self.assertFalse(linqy.make([]).any())
 		self.assertTrue(linqy.make(seq).any(lambda n: n > 3))
 		self.assertFalse(linqy.make(seq).any(lambda n: n < 0))
+
+	def test_first(self):
+		seq = [1,2,3,4,5]
+		self.assertEqual(linqy.make(seq).first(), 1)
+		self.assertEqual(linqy.make(seq).first(lambda n: n != 1), 2)
+		self.assertRaises(IndexError, lambda: linqy.make([]).first())
+
+	def test_last(self):
+		seq = [1,2,3,4,5]
+		self.assertEqual(linqy.make(seq).last(), 5)
+		self.assertEqual(linqy.make(seq).last(lambda n: n != 5), 4)
+		self.assertRaises(IndexError, lambda: linqy.make([]).last())
 	
 
 if __name__ == '__main__':
