@@ -115,6 +115,11 @@ class LinqyTests(unittest.TestCase):
 		e = linqy.make(seq1).concat(seq2)
 		self.assertEqual(list(e), [1,2,3,4,5,6])
 
+	def test_reverse(self):
+		seq = [1,2,3,4,5]
+		e = linqy.make(seq).reverse()
+		self.assertEqual(list(e), [5,4,3,2,1])
+
 	def test_all(self):
 		seq = [1,2,3,4,5]
 		self.assertTrue(linqy.make(seq).all())

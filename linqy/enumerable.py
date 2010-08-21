@@ -103,6 +103,10 @@ def izip(*iterables):
 def iconcat(*iterables):
 	return itertools.chain(*iterables)
 
+@lazymethod
+def ireverse(iterable):
+	return reversed(list(iterable))
+
 def iall(iterable, predicate=bool):
 	for item in itertools.ifilterfalse(Evaluator(predicate), iterable):
 		return False
@@ -112,6 +116,14 @@ def iany(iterable, predicate=bool):
 	for item in itertools.ifilter(Evaluator(predicate), iterable):
 		return True
 	return False
+
+#def ifirst(iterable, predicate=None):
+#	evaluator = Evaluator(predicate)
+#	it = iter(iterable)
+#	while True:
+#		item = next(it)
+#		if predicate is None or evaluator(item):
+#			return it
 
 class Enumerable(object): # {{{1
 	def __init__(self, func):
@@ -162,6 +174,10 @@ class Enumerable(object): # {{{1
 	@linqmethod
 	def concat(self, *iterables):
 		return iconcat(self, *iterables)
+
+	@linqmethod
+	def reverse(self):
+		return ireverse(self)
 
 	@linqmethod
 	def all(self, predicate=bool):
