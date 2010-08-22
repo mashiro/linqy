@@ -1,14 +1,9 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-# imports {{{1
 from linqy.utils import findattr
 
-
-# hack {{{1
 basestring = findattr((__builtins__, 'basestring'), (__builtins__, 'str'))
 
-
-# env {{{1
 __fieldnames__ = [
 	['item1', 'first', 'item'],
 	['item2', 'second'],
@@ -21,8 +16,7 @@ __fieldnames__ = [
 	['item9']
 ]
 
-
-class Evaluator(object): # {{{1
+class Evaluator(object):
 	def __init__(self, source):
 		if isinstance(source, basestring):
 			self.source = compile(source, '<string>', 'eval')
@@ -37,12 +31,14 @@ class Evaluator(object): # {{{1
 				return args[0]
 			else:
 				return tuple(*args)
-		else:
-			if self.is_code:
-				for i, arg in enumerate(args):
-					for name in __fieldnames__[i]:
-						locals().__setitem__(name, arg)
-				return eval(self.source)
-			else:
-				return self.source(*args)
+
+		if self.is_code:
+			# setup local envs
+			for i, arg in enumerate(args):
+				for name in __fieldnames__[i]:
+					locals().__setitem__(name, arg)
+			return eval(self.source)
+
+		# function
+		return self.source(*args)
 
