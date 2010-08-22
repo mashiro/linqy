@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 import itertools
+import functools
 
 class AttributeNotFoundError(Exception):
 	pass
@@ -22,7 +23,8 @@ def findattr(*candidates):
 imap = findattr((itertools, 'imap'), (__builtins__, 'map'))
 ifilter = findattr((itertools, 'ifilter'), (__builtins__, 'filter'))
 ifilterfalse = findattr((itertools, 'ifilterfalse'), (itertools, 'filterfalse'))
+irange = findattr((__builtins__, 'xrange'), range)
 next = findattr((__builtins__, 'next'), lambda x: x.next())
-xrange = findattr((__builtins__, 'xrange'), range)
+reduce = findattr((__builtins__, 'reduce'), (functools, 'reduce'))
 basestring = findattr((__builtins__, 'basestring'), (__builtins__, 'str'))
 

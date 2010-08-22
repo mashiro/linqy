@@ -16,11 +16,17 @@ def linqmethod(func):
 	globals().__setitem__(func.__name__, outer)
 	return func
 
-#def lazymethod(func):
-#	@functools.wraps(func)
-#	def inner(*args, **kwargs):
-#		return Enumerable(lambda: func(*args, **kwargs))
-#	return inner
+def lazymethod(type):
+	def outer(func):
+		@functools.wraps(func)
+		def inner(*args, **kwargs):
+			if isinstance(type, basestring):
+				newtype = globals().__getitem__(type)
+			else:
+				newtype = type
+			return newtype(lambda: func(*args, **kwargs))
+		return inner
+	return outer
 
 # generator
 #--------------------------------------------------------------------------------
@@ -185,10 +191,7 @@ class Enumerable(object):
 
 	@linqmethod
 	def combine(self, *methods):
-		e = self
-		for method in methods:
-			e = method(e)
-		return e
+		return reduce(lambda e, m: m(e), methods, self)
 
 	# equality
 	#--------------------------------------------------------------------------------
@@ -199,117 +202,102 @@ class Enumerable(object):
 	# projection
 	#--------------------------------------------------------------------------------
 	@linqmethod
+	@lazymethod('Enumerable')
 	def select(self, selector):
-		def inner():
-			return imap(Evaluator(selector), self)
-		return Enumerable(lambda: inner())
+		return imap(Evaluator(selector), self)
 
 	@linqmethod
+	@lazymethod('Enumerable')
 	def selectmany(self, selector):
-		def inner():
-			return itertools.chain(*self.select(selector))
-		return Enumerable(lambda: inner())
+		for it in self.select(selector):
+			for item in it:
+				yield item
 
 	# filtering
 	#--------------------------------------------------------------------------------
 	@linqmethod
+	@lazymethod('Enumerable')
 	def where(self, pred):
-		def inner():
-			return ifilter(Evaluator(pred), self)
-		return Enumerable(lambda: inner())
+		return ifilter(Evaluator(pred), self)
 
 	@linqmethod
+	@lazymethod('Enumerable')
 	def oftype(self, type):
-		def inner():
-			return ifilter(lambda x: isinstance(x, type), self)
-		return Enumerable(lambda: inner())
+		return ifilter(lambda x: isinstance(x, type), self)
 
 	# partitioning
 	#--------------------------------------------------------------------------------
 	@linqmethod
+	@lazymethod('Enumerable')
 	def skip(self, count):
-		def inner():
-			return itertools.islice(self, count, None)
-		return Enumerable(lambda: inner())
+		return itertools.islice(self, count, None)
 
 	@linqmethod
+	@lazymethod('Enumerable')
 	def skipwhile(self, pred):
-		def inner():
-			return itertools.dropwhile(Evaluator(pred), self)
-		return Enumerable(lambda: inner())
+		return itertools.dropwhile(Evaluator(pred), self)
 
 	@linqmethod
+	@lazymethod('Enumerable')
 	def take(self, count):
-		def inner():
-			return itertools.islice(self, count)
-		return Enumerable(lambda: inner())
+		return itertools.islice(self, count)
 
 	@linqmethod
+	@lazymethod('Enumerable')
 	def takewhile(self, pred):
-		def inner():
-			return itertools.takewhile(Evaluator(pred), self)
-		return Enumerable(lambda: inner())
+		return itertools.takewhile(Evaluator(pred), self)
+
 
 
 # equality
 #--------------------------------------------------------------------------------
 def iequal(first, second, selector=None):
-	f = Evaluator(selector)
+	func = Evaluator(selector)
 	items1 = list(first)
 	items2 = list(second)
 	if len(items1) != len(items2):
 		return False
-	for i in xrange(len(items1)):
+	for i in irange(len(items1)):
 		item1 = items1[i]
 		item2 = items2[i]
 		if selector is None:
 			if item1 != item2:
 				return False
 		else:
-			if f(item1) != f(item2):
+			if func(item1) != func(item2):
 				return False
 	return True
 
 # generation
 #--------------------------------------------------------------------------------
-def make(iterable):
-	def inner():
-		for item in iterable:
-			yield item
-	return Enumerable(lambda: inner())
+def make(iterable, *methods):
+	return Enumerable(lambda: iter(iterable)).combine(*methods)
 
 def empty():
 	return make([])
 
+@lazymethod(Enumerable)
 def range(*args):
-	def inner():
-		s = slice(*args)
-		return iter(xrange(s.start or 0, s.stop or sys.maxsize, s.step or 1))
-	return Enumerable(lambda: inner())
+	s = slice(*args)
+	return iter(irange(s.start or 0, s.stop or sys.maxsize, s.step or 1))
 
+@lazymethod(Enumerable)
 def repeat(item, count=None):
-	def inner():
-		if count is None:
-			while True:
-				yield item
-		else:
-			for i in range(count):
-				yield item
-	return Enumerable(lambda: inner())
-
-def cycle(iterable):
-	def inner():
-		saved = [item for item in iterable]
-		while saved:
-			for item in saved:
-				yield item
-	return Enumerable(lambda: inner())
-
-def countup(start=0, step=1):
-	def inner():
-		n = start
+	if count is None:
 		while True:
-			yield n
-			n += step
-	return Enumerable(lambda: inner())
+			yield item
+	else:
+		for i in irange(count):
+			yield item
+
+@lazymethod(Enumerable)
+def cycle(iterable):
+	return itertools.cycle(iterable)
+
+@lazymethod(Enumerable)
+def countup(start=0, step=1):
+	n = start
+	while True:
+		yield n
+		n += step
 

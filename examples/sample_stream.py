@@ -5,14 +5,8 @@ import simplejson
 import linqy
 
 def enumerate_line(response):
-	buf = ''
 	while True:
-		c = response.read(1)
-		if c == '\n':
-			yield buf
-			buf = ''
-		else:
-			buf += c
+		yield response.readline()
 
 def sample_stream():
 	response = urllib.urlopen('http://stream.twitter.com/1/statuses/sample.json')
@@ -20,8 +14,7 @@ def sample_stream():
 		linqy.where(lambda s: s is not None and len(s) > 0),
 		linqy.select(lambda s: s.decode('utf-8')),
 		linqy.select(lambda s: simplejson.loads(s)))
-	for item in query:
-		yield item
+	return iter(query)
 
 def main():
 	stream = linqy.make(sample_stream())
