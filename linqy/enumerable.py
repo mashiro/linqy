@@ -66,7 +66,7 @@ def iselect(iterable, selector=None):
 		yield evaluator(item)
 
 @lazymethod
-def iselect_many(iterable, selector=None):
+def iselectmany(iterable, selector=None):
 	for it in iselect(iterable, selector):
 		for item in it:
 			yield item
@@ -80,7 +80,7 @@ def itake(iterable, count):
 	return itertools.islice(iterable, count)
 
 @lazymethod
-def itake_while(iterable, pred=bool):
+def itakewhile(iterable, pred=bool):
 	return itertools.takewhile(Evaluator(pred), iterable)
 
 @lazymethod
@@ -88,7 +88,7 @@ def iskip(iterable, count):
 	return itertools.islice(iterable, count, None)
 
 @lazymethod
-def iskip_while(iterable, pred=bool):
+def iskipwhile(iterable, pred=bool):
 	return itertools.dropwhile(Evaluator(pred), iterable)
 
 @lazymethod
@@ -100,7 +100,7 @@ def iconcat(*iterables):
 	return itertools.chain(*iterables)
 
 @lazymethod
-def iorder_by(iterable, key=None):
+def iorderby(iterable, key=None):
 	if key is None:
 		return iter(sorted(iterable, key=None))
 	else:
@@ -130,14 +130,14 @@ def iany(iterable, pred=bool):
 		return True
 	return False
 
-def ielement_at(iterable, index):
+def ielementat(iterable, index):
 	try:
 		return next(itertools.islice(iterable, index, index+1))
 	except StopIteration:
 		raise IndexError
 
 def inth(iterable, index):
-	return ielement_at(iterable, index)
+	return ielementat(iterable, index)
 
 def ifirst(iterable, pred=None):
 	evaluator = Evaluator(pred)
@@ -153,18 +153,13 @@ def ifirst(iterable, pred=None):
 def ilast(iterable, pred=None):
 	return ifirst(ireverse(iterable), pred)
 
+
 class Enumerable(object):
 	def __init__(self, func):
 		self._func = func
 	
 	def __iter__(self):
 		return self._func()
-
-	def to_list(self):
-		return list(self)
-
-	def to_dict(self, selector=None):
-		return dict(self.select(selector))
 
 	@linqmethod
 	def combine(self, *methods):
@@ -175,8 +170,8 @@ class Enumerable(object):
 		return iselect(self, selector)
 
 	@linqmethod
-	def select_many(self, selector=None):
-		return iselect_many(self, selector)
+	def selectmany(self, selector=None):
+		return iselectmany(self, selector)
 
 	@linqmethod
 	def where(self, pred=bool):
@@ -187,16 +182,16 @@ class Enumerable(object):
 		return itake(self, count)
 
 	@linqmethod
-	def take_while(self, pred=bool):
-		return itake_while(self, pred)
+	def takewhile(self, pred=bool):
+		return itakewhile(self, pred)
 	
 	@linqmethod
 	def skip(self, count):
 		return iskip(self, count)
 
 	@linqmethod
-	def skip_while(self, pred=bool):
-		return iskip_while(self, pred)
+	def skipwhile(self, pred=bool):
+		return iskipwhile(self, pred)
 
 	@linqmethod
 	def zip(self, *iterables):
@@ -215,8 +210,8 @@ class Enumerable(object):
 		return idistinct(self, key)
 
 	@linqmethod
-	def order_by(self, key=None):
-		return iorder_by(self, key=key)
+	def orderby(self, key=None):
+		return iorderby(self, key=key)
 
 	@linqmethod
 	def all(self, pred=bool):
@@ -227,8 +222,8 @@ class Enumerable(object):
 		return iany(self, pred)
 
 	@linqmethod
-	def element_at(self, index):
-		return ielement_at(self, index)
+	def elementat(self, index):
+		return ielementat(self, index)
 
 	@linqmethod
 	def nth(self, index):
@@ -241,4 +236,15 @@ class Enumerable(object):
 	@linqmethod
 	def last(self, pred=None):
 		return ilast(self, pred)
-	
+
+	@linqmethod
+	def tolist(self):
+		return list(self)
+
+	@linqmethod
+	def todict(self, key=None, elem=None):
+		key = Evaluator(key)
+		elem = Evaluator(elem)
+		return dict([(key(item), elem(item)) for item in self])
+
+

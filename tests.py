@@ -16,20 +16,6 @@ class LinqyTests(unittest.TestCase):
 		self.assertEqual(e3(3,4), 12)
 		self.assertEqual(e4(3,4), 12)
 
-	def test_to_list(self):
-		seq = [1,2,3,4,5]
-		e = linqy.make(seq)
-		self.assertEqual(e.to_list(), seq)
-
-	def test_to_dict(self):
-		seq1 = [(1,2),(3,4),(5,6)]
-		e1 = linqy.make(seq1)
-		self.assertEqual(e1.to_dict(), {1:2,3:4,5:6})
-
-		seq2 = {1:2, 3:4, 5:6}
-		e2 = linqy.make(seq2)
-		self.assertEqual(e2.to_dict(lambda k: (k, seq2[k])), {1:2,3:4,5:6})
-
 	def test_make(self):
 		seq = [1,2,3,4,5]
 		e = linqy.make(seq)
@@ -80,10 +66,10 @@ class LinqyTests(unittest.TestCase):
 		self.assertEqual(list(e1), [2,4,6,8,10])
 		self.assertEqual(list(e2), [1,2,3,4,5])
 	
-	def test_select_many(self):
+	def test_selectmany(self):
 		seq = [[1,2],[3,4],[5,6]]
-		e1 = linqy.make(seq).select_many(lambda n: n)
-		e2 = linqy.make(seq).select_many()
+		e1 = linqy.make(seq).selectmany(lambda n: n)
+		e2 = linqy.make(seq).selectmany()
 		self.assertEqual(list(e1), [1,2,3,4,5,6])
 		self.assertEqual(list(e2), [1,2,3,4,5,6])
 
@@ -97,9 +83,9 @@ class LinqyTests(unittest.TestCase):
 		e = linqy.make(seq).take(3)
 		self.assertEqual(list(e), [1,2,3])
 
-	def test_take_while(self):
+	def test_takewhile(self):
 		seq = [1,2,3,4,5]
-		e = linqy.make(seq).take_while(lambda n: n < 3)
+		e = linqy.make(seq).takewhile(lambda n: n < 3)
 		self.assertEqual(list(e), [1,2])
 
 	def test_skip(self):
@@ -107,9 +93,9 @@ class LinqyTests(unittest.TestCase):
 		e = linqy.make(seq).skip(3)
 		self.assertEqual(list(e), [4,5])
 	
-	def test_skip_while(self):
+	def test_skipwhile(self):
 		seq = [1,2,3,4,5]
-		e = linqy.make(seq).skip_while(lambda n: n < 3)
+		e = linqy.make(seq).skipwhile(lambda n: n < 3)
 		self.assertEqual(list(e), [3,4,5])
 	
 	def test_zip(self):
@@ -124,10 +110,10 @@ class LinqyTests(unittest.TestCase):
 		e = linqy.make(seq1).concat(seq2)
 		self.assertEqual(list(e), [1,2,3,4,5,6])
 
-	def test_order_by(self):
+	def test_orderby(self):
 		seq = [[2,6],[4,3],[5,1]]
-		e1 = linqy.make(seq).order_by()
-		e2 = linqy.make(seq).order_by(lambda x: x[1])
+		e1 = linqy.make(seq).orderby()
+		e2 = linqy.make(seq).orderby(lambda x: x[1])
 		self.assertEqual(list(e1), [[2,6],[4,3],[5,1]])
 		self.assertEqual(list(e2), [[5,1],[4,3],[2,6]])
 
@@ -159,10 +145,10 @@ class LinqyTests(unittest.TestCase):
 		self.assertTrue(linqy.make(seq).any(lambda n: n > 3))
 		self.assertFalse(linqy.make(seq).any(lambda n: n < 0))
 
-	def test_element_at(self):
+	def test_elementat(self):
 		seq = [1,2,3,4,5]
-		self.assertEqual(linqy.make(seq).element_at(2), 3)
-		self.assertRaises(IndexError, lambda: linqy.make(seq).element_at(5))
+		self.assertEqual(linqy.make(seq).elementat(2), 3)
+		self.assertRaises(IndexError, lambda: linqy.make(seq).elementat(5))
 
 	def test_nth(self):
 		seq = [1,2,3,4,5]
@@ -180,6 +166,17 @@ class LinqyTests(unittest.TestCase):
 		self.assertEqual(linqy.make(seq).last(), 5)
 		self.assertEqual(linqy.make(seq).last(lambda n: n != 5), 4)
 		self.assertRaises(IndexError, lambda: linqy.make([]).last())
+
+	def test_tolist(self):
+		seq = [1,2,3,4,5]
+		e = linqy.make(seq)
+		self.assertEqual(e.tolist(), seq)
+
+	def test_todict(self):
+		seq = [(1,2),(3,4),(5,6)]
+		e = linqy.make(seq)
+		self.assertEqual(e.todict(key=lambda x: x[0], elem=lambda x: x[1]), {1:2,3:4,5:6})
+
 
 if __name__ == '__main__':
 	unittest.main()
