@@ -2,181 +2,112 @@
 # -*- encoding: utf-8 -*-
 import unittest
 import linqy
-from linqy import Enumerable
-from linqy.evaluator import Evaluator
 
-class LinqyTests(unittest.TestCase):
-	def test_eval(self):
-		e1 = Evaluator(lambda n: n * 2)
-		e2 = Evaluator('item * 2')
-		e3 = Evaluator(lambda a ,b: a * b)
-		e4 = Evaluator('first * second')
-		self.assertEqual(e1(3), 6)
-		self.assertEqual(e2(3), 6)
-		self.assertEqual(e3(3,4), 12)
-		self.assertEqual(e4(3,4), 12)
+class EvaluatorTests(unittest.TestCase):
+	def test_sequence_equal(self):
+		e1 = linqy.Evaluator(lambda n: n * 2)
+		e2 = linqy.Evaluator('_ * 2')
+		e3 = linqy.Evaluator(lambda x, y: x * y)
+		e4 = linqy.Evaluator('_1 * _2')
+		self.assertEqual(e1(2), 4)
+		self.assertEqual(e2(2), 4)
+		self.assertEqual(e3(2,3), 6)
+		self.assertEqual(e4(2,3), 6)
 
+class EqualityTests(unittest.TestCase):
+	def test_sequence_equal(self):
+		e1 = linqy.make([1,2,3])
+		e2 = linqy.make([1,2,3])
+		e3 = linqy.make([1,2,4])
+		e4 = linqy.make([1,2])
+		self.assertTrue(e1.sequence_equal(e1))
+		self.assertTrue(e1.sequence_equal(e2))
+		self.assertFalse(e1.sequence_equal(e3))
+		self.assertFalse(e1.sequence_equal(e4))
+
+class GenerateTests(unittest.TestCase):
 	def test_make(self):
-		seq = [1,2,3,4,5]
-		e = linqy.make(seq)
-		self.assertTrue(isinstance(e, Enumerable))
-		self.assertEqual(list(e), seq)
+		e = linqy.make([1,2,3])
+		self.assertTrue(isinstance(e, linqy.Enumerable))
+		self.assertEqual(list(e), [1,2,3])
+	
+	def test_empty(self):
+		e = linqy.empty()
+		self.assertTrue(isinstance(e, linqy.Enumerable))
+		self.assertEqual(list(e), [])
 	
 	def test_range(self):
-		e1 = linqy.irange(5)
-		e2 = linqy.irange(5,10)
-		e3 = linqy.irange(0,10,2)
-		e4 = linqy.irange(0,-5,-1)
-		self.assertTrue(isinstance(e1, Enumerable))
-		self.assertTrue(isinstance(e2, Enumerable))
-		self.assertTrue(isinstance(e3, Enumerable))
-		self.assertEqual(list(e1), [0,1,2,3,4])
-		self.assertEqual(list(e2), [5,6,7,8,9])
-		self.assertEqual(list(e3), [0,2,4,6,8])
-		self.assertEqual(list(e4), [0,-1,-2,-3,-4])
+		e1 = linqy.range(3)
+		e2 = linqy.range(3, 6)
+		e3 = linqy.range(1, 6, 2)
+		self.assertTrue(isinstance(e1, linqy.Enumerable))
+		self.assertTrue(isinstance(e2, linqy.Enumerable))
+		self.assertTrue(isinstance(e3, linqy.Enumerable))
+		self.assertEqual(list(e1), [0,1,2])
+		self.assertEqual(list(e2), [3,4,5])
+		self.assertEqual(list(e3), [1,3,5])
 	
-	def test_count(self):
-		e1 = linqy.icount().take(5)
-		e2 = linqy.icount(1).take(5)
-		e3 = linqy.icount(2,2).take(5)
-		self.assertTrue(isinstance(e1, Enumerable))
-		self.assertTrue(isinstance(e2, Enumerable))
-		self.assertTrue(isinstance(e3, Enumerable))
-		self.assertEqual(list(e1), [0,1,2,3,4])
-		self.assertEqual(list(e2), [1,2,3,4,5])
-		self.assertEqual(list(e3), [2,4,6,8,10])
-
 	def test_repeat(self):
-		e1 = linqy.irepeat(1, 5)
-		e2 = linqy.irepeat(1).take(5)
-		self.assertTrue(isinstance(e1, Enumerable))
-		self.assertEqual(list(e1), [1,1,1,1,1])
-		self.assertTrue(isinstance(e2, Enumerable))
-		self.assertEqual(list(e2), [1,1,1,1,1])
+		e1 = linqy.repeat(1, 3)
+		e2 = linqy.repeat(1).take(3)
+		self.assertTrue(isinstance(e1, linqy.Enumerable))
+		self.assertTrue(isinstance(e2, linqy.Enumerable))
+		self.assertEqual(list(e1), [1,1,1])
+		self.assertEqual(list(e2), [1,1,1])
 
 	def test_cycle(self):
-		e = linqy.icycle([1,2,3]).take(10)
-		self.assertTrue(isinstance(e, Enumerable))
+		e = linqy.cycle([1,2,3]).take(10)
+		self.assertTrue(isinstance(e, linqy.Enumerable))
 		self.assertEqual(list(e), [1,2,3,1,2,3,1,2,3,1])
+	
+	def test_countup(self):
+		e1 = linqy.countup().take(3)
+		e2 = linqy.countup(3).take(3)
+		e3 = linqy.countup(3,3).take(3)
+		e4 = linqy.countup(3,-3).take(3)
+		self.assertTrue(isinstance(e1, linqy.Enumerable))
+		self.assertTrue(isinstance(e2, linqy.Enumerable))
+		self.assertTrue(isinstance(e3, linqy.Enumerable))
+		self.assertTrue(isinstance(e4, linqy.Enumerable))
+		self.assertEqual(list(e1), [0,1,2])
+		self.assertEqual(list(e2), [3,4,5])
+		self.assertEqual(list(e3), [3,6,9])
+		self.assertEqual(list(e4), [3,0,-3])
 
+class ProjectionTests(unittest.TestCase):
 	def test_select(self):
-		seq = [1,2,3,4,5]
-		e1 = linqy.make(seq).select(lambda n: n * 2)
-		e2 = linqy.make(seq).select()
-		self.assertEqual(list(e1), [2,4,6,8,10])
-		self.assertEqual(list(e2), [1,2,3,4,5])
+		e = linqy.make([1,2,3]).select('_ * 2')
+		self.assertEqual(list(e), [2,4,6])
 	
 	def test_selectmany(self):
-		seq = [[1,2],[3,4],[5,6]]
-		e1 = linqy.make(seq).selectmany(lambda n: n)
-		e2 = linqy.make(seq).selectmany()
-		self.assertEqual(list(e1), [1,2,3,4,5,6])
-		self.assertEqual(list(e2), [1,2,3,4,5,6])
+		e = linqy.make([1,2,3]).selectmany('[_, _*2]')
+		self.assertEqual(list(e), [1,2,2,4,3,6])
 
+class FilteringTests(unittest.TestCase):
 	def test_where(self):
-		seq = [1,2,3,4,5]
-		e = linqy.make(seq).where(lambda n: n > 3)
-		self.assertEqual(list(e), [4,5])
+		e = linqy.range(10).where('_ % 2')
+		self.assertEqual(list(e), [1,3,5,7,9])
 	
-	def test_take(self):
-		seq = [1,2,3,4,5]
-		e = linqy.make(seq).take(3)
-		self.assertEqual(list(e), [1,2,3])
-
-	def test_takewhile(self):
-		seq = [1,2,3,4,5]
-		e = linqy.make(seq).takewhile(lambda n: n < 3)
-		self.assertEqual(list(e), [1,2])
-
+	def test_oftype(self):
+		e = linqy.make([1,'2',3,'4',5]).oftype(int)
+		self.assertEqual(list(e), [1,3,5])
+	
+class PartitioningTests(unittest.TestCase):
 	def test_skip(self):
-		seq = [1,2,3,4,5]
-		e = linqy.make(seq).skip(3)
+		e = linqy.make([1,2,3,4,5]).skip(3)
 		self.assertEqual(list(e), [4,5])
 	
 	def test_skipwhile(self):
-		seq = [1,2,3,4,5]
-		e = linqy.make(seq).skipwhile(lambda n: n < 3)
+		e = linqy.make([1,2,3,4,5]).skipwhile('_ < 3')
 		self.assertEqual(list(e), [3,4,5])
 	
-	def test_zip(self):
-		seq1 = [1,2,3]
-		seq2 = [4,5]
-		e = linqy.make(seq1).zip(seq2)
-		self.assertEqual(list(e), [(1,4),(2,5)])
-	
-	def test_concat(self):
-		seq1 = [1,2,3]
-		seq2 = [4,5,6]
-		e = linqy.make(seq1).concat(seq2)
-		self.assertEqual(list(e), [1,2,3,4,5,6])
+	def test_take(self):
+		e = linqy.make([1,2,3,4,5]).take(3)
+		self.assertEqual(list(e), [1,2,3])
 
-	def test_orderby(self):
-		seq = [[2,6],[4,3],[5,1]]
-		e1 = linqy.make(seq).orderby()
-		e2 = linqy.make(seq).orderby(lambda x: x[1])
-		self.assertEqual(list(e1), [[2,6],[4,3],[5,1]])
-		self.assertEqual(list(e2), [[5,1],[4,3],[2,6]])
-
-	def test_reverse(self):
-		seq = [1,2,3,4,5]
-		e = linqy.make(seq).reverse()
-		self.assertEqual(list(e), [5,4,3,2,1])
-	
-	def test_distince(self):
-		seq1 = [1,2,3,4,5,4,3,2,1]
-		e1 = linqy.make(seq1).distinct()
-		self.assertEqual(list(e1), [1,2,3,4,5])
-
-		seq2 = [(1,2),(3,4),(1,5)]
-		e2 = linqy.make(seq2).distinct(lambda x: x[0])
-		self.assertEqual(dict(e2), {1:2,3:4})
-
-	def test_all(self):
-		seq = [1,2,3,4,5]
-		self.assertTrue(linqy.make(seq).all())
-		self.assertTrue(linqy.make([]).all())
-		self.assertTrue(linqy.make(seq).all(lambda n: n > 0))
-		self.assertFalse(linqy.make(seq).all(lambda n: n < 3))
-	
-	def test_any(self):
-		seq = [1,2,3,4,5]
-		self.assertTrue(linqy.make(seq).any())
-		self.assertFalse(linqy.make([]).any())
-		self.assertTrue(linqy.make(seq).any(lambda n: n > 3))
-		self.assertFalse(linqy.make(seq).any(lambda n: n < 0))
-
-	def test_elementat(self):
-		seq = [1,2,3,4,5]
-		self.assertEqual(linqy.make(seq).elementat(2), 3)
-		self.assertRaises(IndexError, lambda: linqy.make(seq).elementat(5))
-
-	def test_nth(self):
-		seq = [1,2,3,4,5]
-		self.assertEqual(linqy.make(seq).nth(2), 3)
-		self.assertRaises(IndexError, lambda: linqy.make(seq).nth(5))
-
-	def test_first(self):
-		seq = [1,2,3,4,5]
-		self.assertEqual(linqy.make(seq).first(), 1)
-		self.assertEqual(linqy.make(seq).first(lambda n: n != 1), 2)
-		self.assertRaises(IndexError, lambda: linqy.make([]).first())
-
-	def test_last(self):
-		seq = [1,2,3,4,5]
-		self.assertEqual(linqy.make(seq).last(), 5)
-		self.assertEqual(linqy.make(seq).last(lambda n: n != 5), 4)
-		self.assertRaises(IndexError, lambda: linqy.make([]).last())
-
-	def test_tolist(self):
-		seq = [1,2,3,4,5]
-		e = linqy.make(seq)
-		self.assertEqual(e.tolist(), seq)
-
-	def test_todict(self):
-		seq = [(1,2),(3,4),(5,6)]
-		e = linqy.make(seq)
-		self.assertEqual(e.todict(key=lambda x: x[0], elem=lambda x: x[1]), {1:2,3:4,5:6})
-
+	def test_takewhile(self):
+		e = linqy.make([1,2,3,4,5]).takewhile('_ < 3')
+		self.assertEqual(list(e), [1,2])
 
 if __name__ == '__main__':
 	unittest.main()

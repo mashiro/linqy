@@ -1,19 +1,13 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-from linqy.utils import findattr
-
-basestring = findattr((__builtins__, 'basestring'), (__builtins__, 'str'))
+from linqy.utils import basestring
 
 __fieldnames__ = [
-	['item1', 'first', 'item'],
-	['item2', 'second'],
-	['item3'],
-	['item4'],
-	['item5'],
-	['item6'],
-	['item7'],
-	['item8'],
-	['item9']
+	['_1', '_'],
+	['_2'],
+	['_3'],
+	['_4'],
+	['_5']
 ]
 
 class Evaluator(object):
