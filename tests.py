@@ -21,6 +21,15 @@ class LinqyTests(unittest.TestCase):
 		e = linqy.make(seq)
 		self.assertEqual(e.to_list(), seq)
 
+	def test_to_dict(self):
+		seq1 = [(1,2),(3,4),(5,6)]
+		e1 = linqy.make(seq1)
+		self.assertEqual(e1.to_dict(), {1:2,3:4,5:6})
+
+		seq2 = {1:2, 3:4, 5:6}
+		e2 = linqy.make(seq2)
+		self.assertEqual(e2.to_dict(lambda k: (k, seq2[k])), {1:2,3:4,5:6})
+
 	def test_make(self):
 		seq = [1,2,3,4,5]
 		e = linqy.make(seq)
@@ -126,6 +135,15 @@ class LinqyTests(unittest.TestCase):
 		seq = [1,2,3,4,5]
 		e = linqy.make(seq).reverse()
 		self.assertEqual(list(e), [5,4,3,2,1])
+	
+	def test_distince(self):
+		seq1 = [1,2,3,4,5,4,3,2,1]
+		e1 = linqy.make(seq1).distinct()
+		self.assertEqual(list(e1), [1,2,3,4,5])
+
+		seq2 = [(1,2),(3,4),(1,5)]
+		e2 = linqy.make(seq2).distinct(lambda x: x[0])
+		self.assertEqual(dict(e2), {1:2,3:4})
 
 	def test_all(self):
 		seq = [1,2,3,4,5]
@@ -162,7 +180,6 @@ class LinqyTests(unittest.TestCase):
 		self.assertEqual(linqy.make(seq).last(), 5)
 		self.assertEqual(linqy.make(seq).last(lambda n: n != 5), 4)
 		self.assertRaises(IndexError, lambda: linqy.make([]).last())
-	
 
 if __name__ == '__main__':
 	unittest.main()

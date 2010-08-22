@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-# imports {{{1
 import functools
 import itertools
 from linqy.evaluator import Evaluator
 from linqy.utils import findattr
 
-# hack {{{1
 functools.reduce = findattr((functools, 'reduce'), (__builtins__, 'reduce'))
 itertools.izip = findattr((itertools, 'izip'), (__builtins__, 'zip'))
 itertools.ifilter = findattr((itertools, 'ifilter'), (__builtins__, 'filter'))
@@ -15,25 +13,21 @@ itertools.ifilterfalse = findattr((itertools, 'ifilterfalse'), (itertools, 'filt
 next = findattr((__builtins__, 'next'), lambda x: x.next())
 xrange = findattr((__builtins__, 'xrange'), range)
 
-
-# decorators {{{1
 def linqmethod(func):
 	@functools.wraps(func)
-	def outer(*args, **kargs):
+	def outer(*args, **kwargs):
 		def inner(enumerable):
-			return getattr(enumerable, func.__name__)(*args, **kargs)
+			return getattr(enumerable, func.__name__)(*args, **kwargs)
 		return inner
 	globals().__setitem__(func.__name__, outer)
 	return func
 
 def lazymethod(func):
 	@functools.wraps(func)
-	def inner(*args, **kargs):
-		return Enumerable(lambda: func(*args, **kargs))
+	def inner(*args, **kwargs):
+		return Enumerable(lambda: func(*args, **kwargs))
 	return inner
 
-
-# functios {{{1
 def make(iterable, *methods):
 	''' make enumerable from iterable '''
 	def inner():
@@ -116,6 +110,16 @@ def iorder_by(iterable, key=None):
 def ireverse(iterable):
 	return reversed(list(iterable))
 
+@lazymethod
+def idistinct(iterable, key=None):
+	evaluator = Evaluator(key)
+	s = set()
+	for item in iterable:
+		h = hash(evaluator(item))
+		if h not in s:
+			s.add(h)
+			yield item
+
 def iall(iterable, pred=bool):
 	for item in itertools.ifilterfalse(Evaluator(pred), iterable):
 		return False
@@ -149,9 +153,7 @@ def ifirst(iterable, pred=None):
 def ilast(iterable, pred=None):
 	return ifirst(ireverse(iterable), pred)
 
-
-
-class Enumerable(object): # {{{1
+class Enumerable(object):
 	def __init__(self, func):
 		self._func = func
 	
@@ -160,6 +162,9 @@ class Enumerable(object): # {{{1
 
 	def to_list(self):
 		return list(self)
+
+	def to_dict(self, selector=None):
+		return dict(self.select(selector))
 
 	@linqmethod
 	def combine(self, *methods):
@@ -204,6 +209,10 @@ class Enumerable(object): # {{{1
 	@linqmethod
 	def reverse(self):
 		return ireverse(self)
+
+	@linqmethod
+	def distinct(self, key=None):
+		return idistinct(self, key)
 
 	@linqmethod
 	def order_by(self, key=None):
