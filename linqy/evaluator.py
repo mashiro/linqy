@@ -29,7 +29,7 @@ class Evaluator(object):
 				return tuple(*args)
 
 		if self.enum:
-			args = (self.index,) + args
+			args = args + (self.index,)
 			self.index += 1
 
 		if self.is_code:
