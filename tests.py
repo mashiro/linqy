@@ -87,9 +87,11 @@ class ProjectionTests(unittest.TestCase):
 		e1 = linqy.make([1,2,3]).selectmany('[_, _ * 2]')
 		e2 = linqy.make([1,2,3]).selectmany('[(_1, _2), _1 * _2]', enum=True)
 		e3 = linqy.make([1,2,3]).selectmany(lambda i, x: [(i, x), i * x], enum=True)
+		e4 = linqy.make([1,2,3]).selectmany(lambda x: range(x), result=lambda x, y: y)
 		self.assertEqual(list(e1), [1,2,2,4,3,6])
 		self.assertEqual(list(e2), [(0,1),0,(1,2),2,(2,3),6])
 		self.assertEqual(list(e3), [(0,1),0,(1,2),2,(2,3),6])
+		self.assertEqual(list(e4), [0,0,1,0,1,2])
 	
 	def test_zip(self):
 		e = linqy.make([1,2,3]).zip([4,5,6])

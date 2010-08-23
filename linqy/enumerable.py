@@ -214,7 +214,7 @@ class Enumerable(object):
 		for it in self.select(selector, enum=enum):
 			for item in it:
 				if result is not None:
-					yield result(item, it)
+					yield result(it, item)
 				else:
 					yield item
 	
