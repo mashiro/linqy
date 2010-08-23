@@ -11,34 +11,44 @@ __fieldnames__ = [
 ]
 
 class Evaluator(object):
-	def __init__(self, source, enum=False):
-		if isinstance(source, basestring):
-			self.source = compile(source, '<string>', 'eval')
-			self.is_code = True
-		else:
-			self.source = source
-			self.is_code = False
+	def __init__(self, func, enum=False):
+		self.is_str = isinstance(func, basestring)
+		self.func = func
 		self.enum = enum
 		self.index = 0
+		self.source = func if self.is_str else None
+		self.compiled = not self.is_str
+	
+	def __nonzero__(self):
+		return self.func is not None
+
+	def __bool__(self):
+		return self.__nonzero__()
 	
 	def __call__(self, *args):
-		if self.source is None:
+		if not self:
 			if len(args) == 1:
 				return args[0]
 			else:
 				return tuple(*args)
 
 		if self.enum:
+			# append index
 			args = args + (self.index,)
 			self.index += 1
 
-		if self.is_code:
+		if self.is_str:
+			# compile on first time.
+			if not self.compiled:
+				self.func = compile(self.source, '<string>', 'eval')
+				self.compiled = True
+
 			# setup local envs
 			for i, arg in enumerate(args):
 				for name in __fieldnames__[i]:
 					locals().__setitem__(name, arg)
-			return eval(self.source)
-
-		# function
-		return self.source(*args)
+			return eval(self.func)
+		else:
+			# call function
+			return self.func(*args)
 

@@ -4,7 +4,15 @@ import unittest
 import linqy
 
 class EvaluatorTests(unittest.TestCase):
-	def test_sequence_equal(self):
+	def test_bool(self):
+		e1 = linqy.Evaluator(lambda n: n * 2)
+		e2 = linqy.Evaluator(None)
+		self.assertTrue(e1)
+		self.assertFalse(e2)
+		self.assertTrue(bool(e1))
+		self.assertFalse(bool(e2))
+
+	def test_eval(self):
 		e1 = linqy.Evaluator(lambda n: n * 2)
 		e2 = linqy.Evaluator('_ * 2')
 		e3 = linqy.Evaluator(lambda x, y: x * y)

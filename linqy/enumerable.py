@@ -209,14 +209,14 @@ class Enumerable(object):
 	@linqmethod
 	@lazymethod('Enumerable')
 	def selectmany(self, selector, result=None, enum=False):
-		if result is not None:
-			result = Evaluator(result)
-		for it in self.select(selector, enum=enum):
-			for item in it:
-				if result is not None:
-					yield result(it, item)
+		selector = Evaluator(selector, enum=enum)
+		result = Evaluator(result)
+		for x in self:
+			for y in selector(x):
+				if result:
+					yield result(x, y)
 				else:
-					yield item
+					yield y
 	
 	@linqmethod
 	@lazymethod('Enumerable')
@@ -265,7 +265,7 @@ class Enumerable(object):
 # equality
 #--------------------------------------------------------------------------------
 def iequal(first, second, selector=None):
-	func = Evaluator(selector)
+	selector = Evaluator(selector)
 	items1 = list(first)
 	items2 = list(second)
 	if len(items1) != len(items2):
@@ -273,11 +273,11 @@ def iequal(first, second, selector=None):
 	for i in irange(len(items1)):
 		item1 = items1[i]
 		item2 = items2[i]
-		if selector is None:
-			if item1 != item2:
+		if selector:
+			if selector(item1) != selector(item2):
 				return False
 		else:
-			if func(item1) != func(item2):
+			if item1 != item2:
 				return False
 	return True
 
