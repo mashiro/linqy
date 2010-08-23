@@ -18,8 +18,8 @@ class Evaluator(object):
 		else:
 			self.source = source
 			self.is_code = False
-		self.index = 0
 		self.enum = enum
+		self.index = 0
 	
 	def __call__(self, *args):
 		if self.source is None:
