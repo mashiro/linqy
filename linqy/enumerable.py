@@ -203,27 +203,40 @@ class Enumerable(object):
 	#--------------------------------------------------------------------------------
 	@linqmethod
 	@lazymethod('Enumerable')
-	def select(self, selector):
-		return imap(Evaluator(selector), self)
+	def select(self, selector, enum=False):
+		return imap(Evaluator(selector, enum=enum), self)
 
 	@linqmethod
 	@lazymethod('Enumerable')
-	def selectmany(self, selector):
-		for it in self.select(selector):
+	def selectmany(self, selector, result=None, enum=False):
+		if result is not None:
+			result = Evaluator(result)
+		for it in self.select(selector, enum=enum):
 			for item in it:
-				yield item
+				if result is not None:
+					yield result(item, it)
+				else:
+					yield item
+	
+	@linqmethod
+	@lazymethod('Enumerable')
+	def zip(self, *iterables):
+		return izip(self, *iterables)
+
+	@linqmethod
+	def enumerate(self):
+		return countup().zip(self)
 
 	# filtering
 	#--------------------------------------------------------------------------------
 	@linqmethod
 	@lazymethod('Enumerable')
-	def where(self, pred):
-		return ifilter(Evaluator(pred), self)
+	def where(self, pred, enum=False):
+		return ifilter(Evaluator(pred, enum=enum), self)
 
 	@linqmethod
-	@lazymethod('Enumerable')
 	def oftype(self, type):
-		return ifilter(lambda x: isinstance(x, type), self)
+		return self.where(lambda x: isinstance(x, type))
 
 	# partitioning
 	#--------------------------------------------------------------------------------
@@ -234,8 +247,8 @@ class Enumerable(object):
 
 	@linqmethod
 	@lazymethod('Enumerable')
-	def skipwhile(self, pred):
-		return itertools.dropwhile(Evaluator(pred), self)
+	def skipwhile(self, pred, enum=False):
+		return itertools.dropwhile(Evaluator(pred, enum=enum), self)
 
 	@linqmethod
 	@lazymethod('Enumerable')
@@ -244,8 +257,8 @@ class Enumerable(object):
 
 	@linqmethod
 	@lazymethod('Enumerable')
-	def takewhile(self, pred):
-		return itertools.takewhile(Evaluator(pred), self)
+	def takewhile(self, pred, enum=False):
+		return itertools.takewhile(Evaluator(pred, enum=enum), self)
 
 
 

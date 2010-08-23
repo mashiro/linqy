@@ -21,6 +21,7 @@ def findattr(*candidates):
 	raise AttributeNotFoundError
 
 imap = findattr((itertools, 'imap'), (__builtins__, 'map'))
+izip = findattr((itertools, 'izip'), (__builtins__, 'zip'))
 ifilter = findattr((itertools, 'ifilter'), (__builtins__, 'filter'))
 ifilterfalse = findattr((itertools, 'ifilterfalse'), (itertools, 'filterfalse'))
 irange = findattr((__builtins__, 'xrange'), range)

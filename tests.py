@@ -76,17 +76,35 @@ class GenerateTests(unittest.TestCase):
 
 class ProjectionTests(unittest.TestCase):
 	def test_select(self):
-		e = linqy.make([1,2,3]).select('_ * 2')
-		self.assertEqual(list(e), [2,4,6])
+		e1 = linqy.make([1,2,3]).select('_ * 2')
+		e2 = linqy.make([1,2,3]).select('(_1, _1 * _2)', enum=True)
+		e3 = linqy.make([1,2,3]).select(lambda i, x: (i, i * x), enum=True)
+		self.assertEqual(list(e1), [2,4,6])
+		self.assertEqual(list(e2), [(0,0),(1,2),(2,6)])
+		self.assertEqual(list(e3), [(0,0),(1,2),(2,6)])
 	
 	def test_selectmany(self):
-		e = linqy.make([1,2,3]).selectmany('[_, _*2]')
-		self.assertEqual(list(e), [1,2,2,4,3,6])
+		e1 = linqy.make([1,2,3]).selectmany('[_, _ * 2]')
+		e2 = linqy.make([1,2,3]).selectmany('[(_1, _2), _1 * _2]', enum=True)
+		e3 = linqy.make([1,2,3]).selectmany(lambda i, x: [(i, x), i * x], enum=True)
+		self.assertEqual(list(e1), [1,2,2,4,3,6])
+		self.assertEqual(list(e2), [(0,1),0,(1,2),2,(2,3),6])
+		self.assertEqual(list(e3), [(0,1),0,(1,2),2,(2,3),6])
+	
+	def test_zip(self):
+		e = linqy.make([1,2,3]).zip([4,5,6])
+		self.assertEqual(list(e), [(1,4),(2,5),(3,6)])
+	
+	def test_enumerate(self):
+		e = linqy.make([1,2,3]).enumerate()
+		self.assertEqual(list(e), [(0,1),(1,2),(2,3)])
 
 class FilteringTests(unittest.TestCase):
 	def test_where(self):
-		e = linqy.range(10).where('_ % 2')
-		self.assertEqual(list(e), [1,3,5,7,9])
+		e1 = linqy.range(50,100).where('not _ % 10')
+		e2 = linqy.range(50,100).where('_1 < 5', enum=True)
+		self.assertEqual(list(e1), [50,60,70,80,90])
+		self.assertEqual(list(e2), [50,51,52,53,54])
 	
 	def test_oftype(self):
 		e = linqy.make([1,'2',3,'4',5]).oftype(int)
@@ -98,16 +116,20 @@ class PartitioningTests(unittest.TestCase):
 		self.assertEqual(list(e), [4,5])
 	
 	def test_skipwhile(self):
-		e = linqy.make([1,2,3,4,5]).skipwhile('_ < 3')
-		self.assertEqual(list(e), [3,4,5])
+		e1 = linqy.make([1,2,3,4,5]).skipwhile('_ < 3')
+		e2 = linqy.make([1,2,3,4,5]).skipwhile('_1 < 3', enum=True)
+		self.assertEqual(list(e1), [3,4,5])
+		self.assertEqual(list(e2), [4,5])
 	
 	def test_take(self):
 		e = linqy.make([1,2,3,4,5]).take(3)
 		self.assertEqual(list(e), [1,2,3])
 
 	def test_takewhile(self):
-		e = linqy.make([1,2,3,4,5]).takewhile('_ < 3')
-		self.assertEqual(list(e), [1,2])
+		e1 = linqy.make([1,2,3,4,5]).takewhile('_ < 3')
+		e2 = linqy.make([1,2,3,4,5]).takewhile('_1 < 3', enum=True)
+		self.assertEqual(list(e1), [1,2])
+		self.assertEqual(list(e2), [1,2,3])
 
 if __name__ == '__main__':
 	unittest.main()
