@@ -4,6 +4,7 @@ import functools
 import itertools
 from linqy.evaluator import Evaluator
 from linqy.utils import *
+import linqy.functors
 
 
 class Enumerable(object):
@@ -16,9 +17,6 @@ class Enumerable(object):
 	def combine(self, *functors):
 		return reduce(lambda e, f: f(e), functors, self)
 
-class functors(object):
-	pass
-
 
 def register_linqmethod(func):
 	''' register a method and functor '''
@@ -29,13 +27,12 @@ def register_linqmethod(func):
 		return func(self, *args, **kwargs)
 	setattr(Enumerable, name, method)
 
-	@classmethod
 	@functools.wraps(func)
-	def functor(cls, *args, **kwargs):
+	def functor(*args, **kwargs):
 		def inner(e):
 			return getattr(e, name)(*args, **kwargs)
 		return inner
-	setattr(functors, name, functor)
+	setattr(linqy.functors, name, functor)
 
 def linqmethod(func):
 	register_linqmethod(func)
