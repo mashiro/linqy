@@ -165,12 +165,20 @@ class ActionTests(unittest.TestCase):
 		self.assertEqual(self.num, 12)
 	
 class FunctorTests(unittest.TestCase):
-	def test_basic(self):
+	def test_make(self):
 		from linqy.functors import select, where
 		e = linqy.make([1,2,3,4,5],
 			where(lambda x: x > 3),
 			select(lambda x: x * 2))
 		self.assertEqual(list(e), [8,10])
+
+	def test_combine(self):
+		from linqy.functors import select, where
+		e = linqy.make([1,2,3,4,5]).combine(
+			where(lambda x: x > 3),
+			select(lambda x: x * 2))
+		self.assertEqual(list(e), [8,10])
+
 	
 def suite():
 	suite = unittest.TestSuite()
