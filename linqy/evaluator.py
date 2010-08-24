@@ -11,6 +11,8 @@ __fieldnames__ = [
 ]
 
 class Evaluator(object):
+	''' function evaluator '''
+
 	def __init__(self, func, enum=False):
 		self.is_str = isinstance(func, basestring)
 		self.func = func

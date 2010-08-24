@@ -4,10 +4,10 @@ import functools
 import itertools
 from linqy.evaluator import Evaluator
 from linqy.utils import *
-import linqy.functors
-
 
 class Enumerable(object):
+	''' enumerable object '''
+
 	def __init__(self, func):
 		self._func = func
 	
@@ -18,7 +18,19 @@ class Enumerable(object):
 		return reduce(lambda e, f: f(e), functors, self)
 
 
-def register_linqmethod(func):
+def _init_module(name):
+	''' init and store a new module '''
+	import imp
+	import sys
+	module = imp.new_module(name)
+	sys.modules[name] = module
+	return module
+
+# init functors module
+functors = _init_module('linqy.functors')
+
+
+def _register_linqmethod(func):
 	''' register a method and functor '''
 	name = func.__name__
 
@@ -32,10 +44,10 @@ def register_linqmethod(func):
 		def inner(e):
 			return getattr(e, name)(*args, **kwargs)
 		return inner
-	setattr(linqy.functors, name, functor)
+	setattr(functors, name, functor)
 
 def linqmethod(func):
-	register_linqmethod(func)
+	_register_linqmethod(func)
 	return func
 
 def lazymethod(type):
