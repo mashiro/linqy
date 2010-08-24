@@ -141,6 +141,16 @@ class PartitioningTests(unittest.TestCase):
 		self.assertEqual(list(e1), [1,2])
 		self.assertEqual(list(e2), [1,2,3])
 
+def suite():
+	suite = unittest.TestSuite()
+	suite.addTests(unittest.makeSuite(EvaluatorTests))
+	suite.addTests(unittest.makeSuite(EqualityTests))
+	suite.addTests(unittest.makeSuite(GenerateTests))
+	suite.addTests(unittest.makeSuite(ProjectionTests))
+	suite.addTests(unittest.makeSuite(FilteringTests))
+	suite.addTests(unittest.makeSuite(PartitioningTests))
+	return suite
+
 if __name__ == '__main__':
 	unittest.main()
 

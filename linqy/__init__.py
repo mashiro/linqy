@@ -8,6 +8,6 @@ __email__ = 'y.mashiro@gmail.com'
 __license__ = 'MIT'
 __version__ = '0.2'
 __url__ = 'http://github.com/mashiro/linqy'
-  
+
 from linqy.enumerable import *
 
