@@ -24,14 +24,9 @@ class EvaluatorTests(unittest.TestCase):
 
 class EqualityTests(unittest.TestCase):
 	def test_sequence_equal(self):
-		e1 = linqy.make([1,2,3])
-		e2 = linqy.make([1,2,3])
-		e3 = linqy.make([1,2,4])
-		e4 = linqy.make([1,2])
-		self.assertTrue(e1.sequence_equal(e1))
-		self.assertTrue(e1.sequence_equal(e2))
-		self.assertFalse(e1.sequence_equal(e3))
-		self.assertFalse(e1.sequence_equal(e4))
+		self.assertTrue(linqy.make([1,2,3]).sequence_equal(linqy.make([1,2,3])))
+		self.assertFalse(linqy.make([1,2,3]).sequence_equal(linqy.make([1,2,4])))
+		self.assertFalse(linqy.make([1,2,3]).sequence_equal(linqy.make([1,2])))
 
 class GenerateTests(unittest.TestCase):
 	def test_make(self):
@@ -141,6 +136,34 @@ class PartitioningTests(unittest.TestCase):
 		self.assertEqual(list(e1), [1,2])
 		self.assertEqual(list(e2), [1,2,3])
 
+class ActionTests(unittest.TestCase):
+	def setUp(self):
+		self.num = 0
+
+	def add(self, x):
+		self.num += x
+
+	def addi(self, x, i):
+		self.num += x
+
+	def test_do(self):
+		e = linqy.make([1,2,3]).do(self.add)
+		self.assertEqual(self.num, 0)
+		list(e)
+		self.assertEqual(self.num, 6)
+
+		e = linqy.make([1,2,3]).do(self.addi, enum=True)
+		self.assertEqual(self.num, 6)
+		list(e)
+		self.assertEqual(self.num, 12)
+
+	def test_foreach(self):
+		linqy.make([1,2,3]).foreach(self.add)
+		self.assertEqual(self.num, 6)
+
+		linqy.make([1,2,3]).foreach(self.addi, enum=True)
+		self.assertEqual(self.num, 12)
+	
 def suite():
 	suite = unittest.TestSuite()
 	suite.addTests(unittest.makeSuite(EvaluatorTests))
@@ -149,6 +172,7 @@ def suite():
 	suite.addTests(unittest.makeSuite(ProjectionTests))
 	suite.addTests(unittest.makeSuite(FilteringTests))
 	suite.addTests(unittest.makeSuite(PartitioningTests))
+	suite.addTests(unittest.makeSuite(ActionTests))
 	return suite
 
 if __name__ == '__main__':
