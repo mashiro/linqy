@@ -3,7 +3,6 @@
 import urllib
 import simplejson
 import linqy
-from linqy.functors import *
 
 def enumerate_line(response):
 	while True:
@@ -11,18 +10,17 @@ def enumerate_line(response):
 
 def sample_stream():
 	response = urllib.urlopen('http://stream.twitter.com/1/statuses/sample.json')
-	query = linqy.make(enumerate_line(response),
-		where(lambda s: s),
-		select(lambda s: s.decode('utf-8')),
-		select(lambda s: simplejson.loads(s)))
+	query = (linqy.make(enumerate_line(response))
+			.where(lambda s: s)
+			.select(lambda s: s.decode('utf-8'))
+			.select(lambda s: simplejson.loads(s)))
 	return iter(query)
 
 def main():
 	stream = linqy.make(sample_stream())
 	ids = stream.take(1)
-	statuses = stream.combine(
-		where(lambda s: 'user' in s),
-		select(lambda s: linqy.anonymouse(name=s['user']['screen_name'], text=s['text'])))
+	statuses = (stream.where(lambda s: 'user' in s)
+			.select(lambda s: linqy.anonymouse(name=s['user']['screen_name'], text=s['text'])))
 
 	# subscribe
 	for status in statuses:
