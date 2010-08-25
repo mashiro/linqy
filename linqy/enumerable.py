@@ -8,49 +8,21 @@ from linqy.utils import *
 class Enumerable(object):
 	''' enumerable object '''
 
-	def __init__(self, func):
-		self._func = func
+	def __init__(self, generator):
+		self._generator = generator
 	
 	def __iter__(self):
-		return self._func()
-
-	def combine(self, *functors):
-		return reduce(lambda e, f: f(e), functors, self)
+		return self._generator()
 
 	def to_list(self):
 		return list(self)
 
 
-def _init_module(name):
-	''' init and store a new module '''
-	import imp
-	import sys
-	module = imp.new_module(name)
-	sys.modules[name] = module
-	return module
-
-# init functors module
-functors = _init_module('linqy.functors')
-
-
-def _register_linqmethod(func):
-	''' register a method and functor '''
-	name = func.__name__
-
+def linqmethod(func):
 	@functools.wraps(func)
 	def method(self, *args, **kwargs):
 		return func(self, *args, **kwargs)
-	setattr(Enumerable, name, method)
-
-	@functools.wraps(func)
-	def functor(*args, **kwargs):
-		def inner(e):
-			return getattr(e, name)(*args, **kwargs)
-		return inner
-	setattr(functors, name, functor)
-
-def linqmethod(func):
-	_register_linqmethod(func)
+	setattr(Enumerable, func.__name__, method)
 	return func
 
 def lazymethod(type):
@@ -64,8 +36,8 @@ def lazymethod(type):
 
 # generation
 #--------------------------------------------------------------------------------
-def make(iterable, *functors):
-	return as_enumerable(iterable).combine(*functors)
+def make(iterable):
+	return as_enumerable(iterable)
 
 def empty():
 	return make([])
