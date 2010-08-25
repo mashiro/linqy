@@ -23,7 +23,7 @@ def findattr(*candidates):
 
 def anonymouse(**kwargs):
 	''' make anonymouse type instance '''
-	return type('', (object,), dict(kwargs))()
+	return type('', (object,), kwargs)()
 
 imap = findattr((itertools, 'imap'), (__builtins__, 'map'))
 izip = findattr((itertools, 'izip'), (__builtins__, 'zip'))
