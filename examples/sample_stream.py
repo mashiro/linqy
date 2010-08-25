@@ -12,7 +12,7 @@ def enumerate_line(response):
 def sample_stream():
 	response = urllib.urlopen('http://stream.twitter.com/1/statuses/sample.json')
 	query = linqy.make(enumerate_line(response),
-		where(lambda s: s is not None and len(s) > 0),
+		where(lambda s: s),
 		select(lambda s: s.decode('utf-8')),
 		select(lambda s: simplejson.loads(s)))
 	return iter(query)
@@ -22,10 +22,15 @@ def main():
 	ids = stream.take(1)
 	statuses = stream.combine(
 		where(lambda s: 'user' in s),
-		select(lambda s: {'name': s['user']['screen_name'], 'text': s['text']}))
+		select(lambda s: linqy.anonymouse(name=s['user']['screen_name'], text=s['text'])))
+
+	# subscribe
 	for status in statuses:
-		print '%s: %s' % (status['name'], status['text'])
+		print '%s: %s' % (status.name, status.text)
 
 if __name__ == '__main__':
-	main()
+	try:
+		main()
+	except KeyboardInterrupt:
+		pass
 

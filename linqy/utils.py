@@ -7,6 +7,7 @@ class AttributeNotFoundError(Exception):
 	pass
 
 def findattr(*candidates):
+	''' find a attribute in module or dict '''
 	for candidate in candidates:
 		if isinstance(candidate, tuple):
 			module, name = candidate
@@ -19,6 +20,10 @@ def findattr(*candidates):
 		else:
 			return candidate
 	raise AttributeNotFoundError
+
+def anonymouse(**kwargs):
+	''' make anonymouse type instance '''
+	return type('', (object,), dict(kwargs))()
 
 imap = findattr((itertools, 'imap'), (__builtins__, 'map'))
 izip = findattr((itertools, 'izip'), (__builtins__, 'zip'))
