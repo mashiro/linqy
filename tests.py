@@ -3,6 +3,11 @@
 import unittest
 import linqy
 
+class EnumerableTests(unittest.TestCase):
+	def test_to_list(self):
+		e = linqy.make([1,2,3,4,5])
+		self.assertEqual(e.to_list(), [1,2,3,4,5])
+
 class EvaluatorTests(unittest.TestCase):
 	def test_bool(self):
 		e1 = linqy.Evaluator(lambda n: n * 2)
@@ -182,6 +187,7 @@ class FunctorTests(unittest.TestCase):
 	
 def suite():
 	suite = unittest.TestSuite()
+	suite.addTests(unittest.makeSuite(EnumerableTests))
 	suite.addTests(unittest.makeSuite(EvaluatorTests))
 	suite.addTests(unittest.makeSuite(EqualityTests))
 	suite.addTests(unittest.makeSuite(GenerateTests))

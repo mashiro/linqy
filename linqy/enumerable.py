@@ -17,6 +17,9 @@ class Enumerable(object):
 	def combine(self, *functors):
 		return reduce(lambda e, f: f(e), functors, self)
 
+	def to_list(self):
+		return list(self)
+
 
 def _init_module(name):
 	''' init and store a new module '''
