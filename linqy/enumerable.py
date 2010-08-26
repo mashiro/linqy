@@ -14,7 +14,7 @@ class Enumerable(object):
 	def __iter__(self):
 		return self._generator()
 
-	def to_list(self):
+	def tolist(self):
 		return list(self)
 
 
@@ -37,7 +37,7 @@ def lazymethod(type):
 # generation
 #--------------------------------------------------------------------------------
 def make(iterable):
-	return as_enumerable(iterable)
+	return asenumerable(iterable)
 
 def empty():
 	return make([])
@@ -71,7 +71,7 @@ def countup(start=0, step=1):
 # conversions
 #--------------------------------------------------------------------------------
 @linqmethod
-def as_enumerable(iterable):
+def asenumerable(iterable):
 	if isinstance(iterable, Enumerable):
 		return iterable
 	else:
@@ -145,7 +145,7 @@ def takewhile(iterable, pred, enum=False):
 # equality
 #--------------------------------------------------------------------------------
 @linqmethod
-def sequence_equal(first, second, selector=None):
+def sequenceequal(first, second, selector=None):
 	selector = Evaluator(selector)
 	items1 = list(first)
 	items2 = list(second)

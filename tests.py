@@ -4,9 +4,9 @@ import unittest
 import linqy
 
 class EnumerableTests(unittest.TestCase):
-	def test_to_list(self):
+	def test_tolist(self):
 		e = linqy.make([1,2,3,4,5])
-		self.assertEqual(e.to_list(), [1,2,3,4,5])
+		self.assertEqual(e.tolist(), [1,2,3,4,5])
 
 class EvaluatorTests(unittest.TestCase):
 	def test_bool(self):
@@ -28,10 +28,10 @@ class EvaluatorTests(unittest.TestCase):
 		self.assertEqual(e4(2,3), 6)
 
 class EqualityTests(unittest.TestCase):
-	def test_sequence_equal(self):
-		self.assertTrue(linqy.make([1,2,3]).sequence_equal(linqy.make([1,2,3])))
-		self.assertFalse(linqy.make([1,2,3]).sequence_equal(linqy.make([1,2,4])))
-		self.assertFalse(linqy.make([1,2,3]).sequence_equal(linqy.make([1,2])))
+	def test_sequenceequal(self):
+		self.assertTrue(linqy.make([1,2,3]).sequenceequal(linqy.make([1,2,3])))
+		self.assertFalse(linqy.make([1,2,3]).sequenceequal(linqy.make([1,2,4])))
+		self.assertFalse(linqy.make([1,2,3]).sequenceequal(linqy.make([1,2])))
 
 class GenerateTests(unittest.TestCase):
 	def test_make(self):
