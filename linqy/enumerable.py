@@ -2,7 +2,7 @@
 # -*- encoding: utf-8 -*-
 import functools
 import itertools
-from linqy.evaluator import Evaluator
+from linqy.function import Function
 from linqy.utils import *
 
 class Enumerable(object):
@@ -82,14 +82,14 @@ def asenumerable(iterable):
 #--------------------------------------------------------------------------------
 @linqmethod
 @lazymethod(Enumerable)
-def select(iterable, selector, enum=False):
-	return imap(Evaluator(selector, enum=enum), iterable)
+def select(iterable, selector):
+	return imap(Function(selector), iterable)
 
 @linqmethod
 @lazymethod(Enumerable)
-def selectmany(iterable, selector, result=None, enum=False):
-	selector = Evaluator(selector, enum=enum)
-	result = Evaluator(result)
+def selectmany(iterable, selector, result=None):
+	selector = Function(selector)
+	result = Function(result)
 	for x in make(iterable):
 		for y in selector(x):
 			if result:
@@ -111,8 +111,8 @@ def enumerate(iterable):
 #--------------------------------------------------------------------------------
 @linqmethod
 @lazymethod(Enumerable)
-def where(iterable, pred, enum=False):
-	return ifilter(Evaluator(pred, enum=enum), iterable)
+def where(iterable, pred):
+	return ifilter(Function(pred), iterable)
 
 @linqmethod
 def oftype(iterable, type):
@@ -128,8 +128,8 @@ def skip(iterable, count):
 
 @linqmethod
 @lazymethod(Enumerable)
-def skipwhile(iterable, pred, enum=False):
-	return itertools.dropwhile(Evaluator(pred, enum=enum), iterable)
+def skipwhile(iterable, pred):
+	return itertools.dropwhile(Function(pred), iterable)
 
 @linqmethod
 @lazymethod(Enumerable)
@@ -138,43 +138,37 @@ def take(iterable, count):
 
 @linqmethod
 @lazymethod(Enumerable)
-def takewhile(iterable, pred, enum=False):
-	return itertools.takewhile(Evaluator(pred, enum=enum), iterable)
+def takewhile(iterable, pred):
+	return itertools.takewhile(Function(pred), iterable)
 
 
 # equality
 #--------------------------------------------------------------------------------
 @linqmethod
 def sequenceequal(first, second, selector=None):
-	selector = Evaluator(selector)
-	items1 = list(first)
-	items2 = list(second)
-	if len(items1) != len(items2):
+	selector = Function(selector)
+	first = list(first)
+	second = list(second)
+	if len(first) != len(second):
 		return False
-	for i in irange(len(items1)):
-		item1 = items1[i]
-		item2 = items2[i]
-		if selector:
-			if selector(item1) != selector(item2):
-				return False
-		else:
-			if item1 != item2:
-				return False
+	for a, b in izip(first, second):
+		if selector(a) != selector(b):
+			return False
 	return True
 
 
 # action
 #--------------------------------------------------------------------------------
 @linqmethod
-def foreach(iterable, action, enum=False):
-	action = Evaluator(action, enum=enum)
+def foreach(iterable, action):
+	action = Function(action)
 	for item in iterable:
 		action(item)
 
 @linqmethod
 @lazymethod(Enumerable)
-def do(iterable, action, enum=False):
-	action = Evaluator(action, enum=enum)
+def do(iterable, action):
+	action = Function(action)
 	for item in iterable:
 		action(item)
 		yield item

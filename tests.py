@@ -3,29 +3,27 @@
 import unittest
 import linqy
 
+class FunctionTests(unittest.TestCase):
+	def test_lambda(self):
+		f = linqy.Function(lambda x, y: x * y)
+		self.assertTrue(f)
+		self.assertEqual(f.arity, 2)
+		self.assertEqual(f.index, 0)
+		self.assertEqual(f(2,3), 6)
+		self.assertEqual(f.index, 1)
+	
+	def test_none(self):
+		f = linqy.Function(None)
+		self.assertFalse(f)
+		self.assertEqual(f.arity, None)
+		self.assertEqual(f.index, 0)
+		self.assertEqual(f(2), 2)
+		self.assertEqual(f.index, 1)
+
 class EnumerableTests(unittest.TestCase):
 	def test_tolist(self):
 		e = linqy.make([1,2,3,4,5])
 		self.assertEqual(e.tolist(), [1,2,3,4,5])
-
-class EvaluatorTests(unittest.TestCase):
-	def test_bool(self):
-		e1 = linqy.Evaluator(lambda n: n * 2)
-		e2 = linqy.Evaluator(None)
-		self.assertTrue(e1)
-		self.assertFalse(e2)
-		self.assertTrue(bool(e1))
-		self.assertFalse(bool(e2))
-
-	def test_eval(self):
-		e1 = linqy.Evaluator(lambda n: n * 2)
-		e2 = linqy.Evaluator('_ * 2')
-		e3 = linqy.Evaluator(lambda x, y: x * y)
-		e4 = linqy.Evaluator('_1 * _2')
-		self.assertEqual(e1(2), 4)
-		self.assertEqual(e2(2), 4)
-		self.assertEqual(e3(2,3), 6)
-		self.assertEqual(e4(2,3), 6)
 
 class EqualityTests(unittest.TestCase):
 	def test_sequenceequal(self):
@@ -84,22 +82,18 @@ class GenerateTests(unittest.TestCase):
 
 class ProjectionTests(unittest.TestCase):
 	def test_select(self):
-		e1 = linqy.make([1,2,3]).select('_ * 2')
-		e2 = linqy.make([1,2,3]).select('(_2, _2 * _1)', enum=True)
-		e3 = linqy.make([1,2,3]).select(lambda x, i: (i, i * x), enum=True)
+		e1 = linqy.make([1,2,3]).select(lambda x: x * 2)
+		e2 = linqy.make([1,2,3]).select(lambda x, i: (i, i * x))
 		self.assertEqual(list(e1), [2,4,6])
 		self.assertEqual(list(e2), [(0,0),(1,2),(2,6)])
-		self.assertEqual(list(e3), [(0,0),(1,2),(2,6)])
 	
 	def test_selectmany(self):
-		e1 = linqy.make([1,2,3]).selectmany('[_, _ * 2]')
-		e2 = linqy.make([1,2,3]).selectmany('[(_2, _1), _2 * _1]', enum=True)
-		e3 = linqy.make([1,2,3]).selectmany(lambda x, i: [(i, x), i * x], enum=True)
-		e4 = linqy.make([1,2,3]).selectmany(lambda x: range(x), result=lambda x, y: y)
+		e1 = linqy.make([1,2,3]).selectmany(lambda x: [x, x * 2])
+		e2 = linqy.make([1,2,3]).selectmany(lambda x, i: [(i, x), i * x])
+		e3 = linqy.make([1,2,3]).selectmany(lambda x: range(x), result=lambda x, y: y)
 		self.assertEqual(list(e1), [1,2,2,4,3,6])
 		self.assertEqual(list(e2), [(0,1),0,(1,2),2,(2,3),6])
-		self.assertEqual(list(e3), [(0,1),0,(1,2),2,(2,3),6])
-		self.assertEqual(list(e4), [0,0,1,0,1,2])
+		self.assertEqual(list(e3), [0,0,1,0,1,2])
 	
 	def test_zip(self):
 		e = linqy.make([1,2,3]).zip([4,5,6])
@@ -111,8 +105,8 @@ class ProjectionTests(unittest.TestCase):
 
 class FilteringTests(unittest.TestCase):
 	def test_where(self):
-		e1 = linqy.range(50,100).where('not _ % 10')
-		e2 = linqy.range(50,100).where('_2 < 5', enum=True)
+		e1 = linqy.range(50,100).where(lambda x: not x % 10)
+		e2 = linqy.range(50,100).where(lambda x, i: i < 5)
 		self.assertEqual(list(e1), [50,60,70,80,90])
 		self.assertEqual(list(e2), [50,51,52,53,54])
 	
@@ -126,8 +120,8 @@ class PartitioningTests(unittest.TestCase):
 		self.assertEqual(list(e), [4,5])
 	
 	def test_skipwhile(self):
-		e1 = linqy.make([1,2,3,4,5]).skipwhile('_ < 3')
-		e2 = linqy.make([1,2,3,4,5]).skipwhile('_2 < 3', enum=True)
+		e1 = linqy.make([1,2,3,4,5]).skipwhile(lambda x: x < 3)
+		e2 = linqy.make([1,2,3,4,5]).skipwhile(lambda x, i: i < 3)
 		self.assertEqual(list(e1), [3,4,5])
 		self.assertEqual(list(e2), [4,5])
 	
@@ -136,8 +130,8 @@ class PartitioningTests(unittest.TestCase):
 		self.assertEqual(list(e), [1,2,3])
 
 	def test_takewhile(self):
-		e1 = linqy.make([1,2,3,4,5]).takewhile('_ < 3')
-		e2 = linqy.make([1,2,3,4,5]).takewhile('_2 < 3', enum=True)
+		e1 = linqy.make([1,2,3,4,5]).takewhile(lambda x: x < 3)
+		e2 = linqy.make([1,2,3,4,5]).takewhile(lambda x, i: i < 3)
 		self.assertEqual(list(e1), [1,2])
 		self.assertEqual(list(e2), [1,2,3])
 
@@ -157,7 +151,7 @@ class ActionTests(unittest.TestCase):
 		list(e)
 		self.assertEqual(self.num, 6)
 
-		e = linqy.make([1,2,3]).do(self.addi, enum=True)
+		e = linqy.make([1,2,3]).do(self.addi)
 		self.assertEqual(self.num, 6)
 		list(e)
 		self.assertEqual(self.num, 12)
@@ -166,14 +160,14 @@ class ActionTests(unittest.TestCase):
 		linqy.make([1,2,3]).foreach(self.add)
 		self.assertEqual(self.num, 6)
 
-		linqy.make([1,2,3]).foreach(self.addi, enum=True)
+		linqy.make([1,2,3]).foreach(self.addi)
 		self.assertEqual(self.num, 12)
 	
 	
 def suite():
 	suite = unittest.TestSuite()
+	suite.addTests(unittest.makeSuite(FunctionTests))
 	suite.addTests(unittest.makeSuite(EnumerableTests))
-	suite.addTests(unittest.makeSuite(EvaluatorTests))
 	suite.addTests(unittest.makeSuite(EqualityTests))
 	suite.addTests(unittest.makeSuite(GenerateTests))
 	suite.addTests(unittest.makeSuite(ProjectionTests))

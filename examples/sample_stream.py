@@ -4,7 +4,7 @@ import urllib
 import linqy
 try:
 	import json
-except:
+except ImportError:
 	import simplejson as json
 
 def enumerate_line(response):
