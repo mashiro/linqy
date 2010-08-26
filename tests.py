@@ -4,6 +4,14 @@ import unittest
 import linqy
 
 class FunctionTests(unittest.TestCase):
+	def test_identity(self):
+		f = linqy.Function(None)
+		self.assertFalse(f)
+		self.assertEqual(f.arity, 1)
+		self.assertEqual(f.index, 0)
+		self.assertEqual(f(2), 2)
+		self.assertEqual(f.index, 1)
+
 	def test_lambda(self):
 		f = linqy.Function(lambda x, y: x * y)
 		self.assertTrue(f)
@@ -11,13 +19,16 @@ class FunctionTests(unittest.TestCase):
 		self.assertEqual(f.index, 0)
 		self.assertEqual(f(2,3), 6)
 		self.assertEqual(f.index, 1)
-	
-	def test_none(self):
-		f = linqy.Function(None)
-		self.assertFalse(f)
-		self.assertEqual(f.arity, None)
+
+	def test_method(self):
+		class inner(object):
+			def f(self, x, y):
+				return x * y
+		f = linqy.Function(inner().f)
+		self.assertTrue(f)
+		self.assertEqual(f.arity, 2)
 		self.assertEqual(f.index, 0)
-		self.assertEqual(f(2), 2)
+		self.assertEqual(f(2,3), 6)
 		self.assertEqual(f.index, 1)
 
 class EnumerableTests(unittest.TestCase):
