@@ -18,12 +18,14 @@ class Enumerable(object):
 		return list(self)
 
 
-def linqmethod(func):
-	@functools.wraps(func)
-	def method(self, *args, **kwargs):
-		return func(self, *args, **kwargs)
-	setattr(Enumerable, func.__name__, method)
-	return func
+def linqmethod(type):
+	def outer(func):
+		@functools.wraps(func)
+		def method(self, *args, **kwargs):
+			return func(self, *args, **kwargs)
+		setattr(type, func.__name__, method)
+		return func
+	return outer
 
 def lazymethod(type):
 	def outer(func):
@@ -70,7 +72,7 @@ def countup(start=0, step=1):
 
 # conversions
 #--------------------------------------------------------------------------------
-@linqmethod
+@linqmethod(Enumerable)
 def asenumerable(iterable):
 	if isinstance(iterable, Enumerable):
 		return iterable
@@ -80,12 +82,12 @@ def asenumerable(iterable):
 
 # projection
 #--------------------------------------------------------------------------------
-@linqmethod
+@linqmethod(Enumerable)
 @lazymethod(Enumerable)
 def select(iterable, selector):
 	return imap(Function(selector), iterable)
 
-@linqmethod
+@linqmethod(Enumerable)
 @lazymethod(Enumerable)
 def selectmany(iterable, selector, result=None):
 	selector = Function(selector)
@@ -97,46 +99,62 @@ def selectmany(iterable, selector, result=None):
 			else:
 				yield y
 
-@linqmethod
+@linqmethod(Enumerable)
 @lazymethod(Enumerable)
 def zip(iterable, *iterables):
 	return izip(iterable, *iterables)
 
-@linqmethod
+@linqmethod(Enumerable)
 def enumerate(iterable):
 	return countup().zip(iterable)
 
 
 # filtering
 #--------------------------------------------------------------------------------
-@linqmethod
+@linqmethod(Enumerable)
 @lazymethod(Enumerable)
 def where(iterable, pred):
 	return ifilter(Function(pred), iterable)
 
-@linqmethod
+@linqmethod(Enumerable)
 def oftype(iterable, type):
 	return where(iterable, lambda x: isinstance(x, type))
 
 
+# ordering
+#--------------------------------------------------------------------------------
+@linqmethod(Enumerable)
+@lazymethod(Enumerable)
+def orderby(iterable, key=None, reverse=False):
+	return iter(sorted(iterable, key=key, reverse=reverse))
+
+# thenby does'nt implement it
+# use orderby(iterable, key=lambda x: (x[0], x[1]))
+
+@linqmethod(Enumerable)
+@lazymethod(Enumerable)
+def reverse(iterable):
+	return reversed(list(iterable))
+
+
 # partitioning
 #--------------------------------------------------------------------------------
-@linqmethod
+@linqmethod(Enumerable)
 @lazymethod(Enumerable)
 def skip(iterable, count):
 	return itertools.islice(iterable, count, None)
 
-@linqmethod
+@linqmethod(Enumerable)
 @lazymethod(Enumerable)
 def skipwhile(iterable, pred):
 	return itertools.dropwhile(Function(pred), iterable)
 
-@linqmethod
+@linqmethod(Enumerable)
 @lazymethod(Enumerable)
 def take(iterable, count):
 	return itertools.islice(iterable, count)
 
-@linqmethod
+@linqmethod(Enumerable)
 @lazymethod(Enumerable)
 def takewhile(iterable, pred):
 	return itertools.takewhile(Function(pred), iterable)
@@ -144,11 +162,10 @@ def takewhile(iterable, pred):
 
 # equality
 #--------------------------------------------------------------------------------
-@linqmethod
+@linqmethod(Enumerable)
 def sequenceequal(first, second, selector=None):
 	selector = Function(selector)
-	first = list(first)
-	second = list(second)
+	first, second = imap(list, [first, second])
 	if len(first) != len(second):
 		return False
 	for a, b in izip(first, second):
@@ -159,18 +176,17 @@ def sequenceequal(first, second, selector=None):
 
 # action
 #--------------------------------------------------------------------------------
-@linqmethod
+@linqmethod(Enumerable)
 def foreach(iterable, action):
 	action = Function(action)
 	for item in iterable:
 		action(item)
 
-@linqmethod
+@linqmethod(Enumerable)
 @lazymethod(Enumerable)
 def do(iterable, action):
 	action = Function(action)
 	for item in iterable:
 		action(item)
 		yield item
-
 

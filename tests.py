@@ -125,6 +125,31 @@ class FilteringTests(unittest.TestCase):
 		e = linqy.make([1,'2',3,'4',5]).oftype(int)
 		self.assertEqual(list(e), [1,3,5])
 	
+class OrderingTests(unittest.TestCase):
+	def test_orderby(self):
+		seq = [[1,2],[2,1],[3,2],[2,2],[1,1]]
+
+		a = [[1,2],[1,1],[2,1],[2,2],[3,2]]
+		e = linqy.make(seq).orderby(lambda x: x[0])
+		self.assertEqual(list(e), a)
+
+		a = [[3,2],[2,1],[2,2],[1,2],[1,1]]
+		e = linqy.make(seq).orderby(lambda x: x[0], reverse=True)
+		self.assertEqual(list(e), a)
+
+		a = [[2,1],[1,1],[1,2],[3,2],[2,2]]
+		e = linqy.make(seq).orderby(lambda x: x[1])
+		self.assertEqual(list(e), a)
+
+		a = [[1,1],[2,1],[1,2],[2,2],[3,2]]
+		e = linqy.make(seq).orderby(lambda x: (x[1], x[0]))
+		self.assertEqual(list(e), a)
+	
+	def test_reverse(self):
+		e = linqy.make([1,2,3,4,5]).reverse()
+		self.assertEqual(list(e), [5,4,3,2,1])
+
+
 class PartitioningTests(unittest.TestCase):
 	def test_skip(self):
 		e = linqy.make([1,2,3,4,5]).skip(3)
