@@ -3,35 +3,43 @@
 import functools
 import itertools
 from linqy.function import Function
-from linqy.comparison import Not
 from linqy.utils import *
 
 class Enumerable(object):
 	''' enumerable object '''
 
 	def __init__(self, generator):
-		self._generator = generator
+		self.generator = generator
 	
 	def __iter__(self):
-		return self._generator()
+		return self.generator()
 
 class OrderedEnumerable(Enumerable):
 	def __init__(self, iterable, key, reverse, parent=None):
-		self._iterable = iterable
-		self._key = key
-		self._reverse = reverse
-		self._parent = parent
+		self.iterable = iterable
+		self.key = key
+		self.reverse = reverse
+		self.parent = parent
 	
 	def __iter__(self):
-		return iter(sorted(self._iterable, key=self._key, reverse=self._reverse))
+		def key(context):
+			if context.reverse:
+				return lambda x: Negate(context.key(x))
+			else:
+				return lambda x: context.key(x)
+
+		keys = [key(context) for context in self.contexts()]
+		func = lambda x: tuple(imap(lambda key: key(x), keys))
+		return iter(sorted(self.iterable, key=func))
 
 	def contexts(self):
 		results = []
-		parent = self._parent
-		while parent is not None:
-			results.append(parent)
-			parent = parent._parent
-		return results
+		context = self
+		while context is not None:
+			results.append(context)
+			context = context.parent
+		return reversed(results)
+
 
 def linqmethod(type):
 	def outer(func):
@@ -145,23 +153,18 @@ def oftype(iterable, type):
 @linqmethod(Enumerable)
 def orderby(iterable, key=None, reverse=False):
 	return OrderedEnumerable(iterable, key, reverse)
-#def orderby(iterable, key=None, reverse=False):
-#	return iter(sorted(iterable, key=key, reverse=reverse))
+
+@linqmethod(Enumerable)
+def orderby_descending(iterable, key=None):
+	return orderby(iterable, key=key, reverse=True)
 
 @linqmethod(OrderedEnumerable)
 def thenby(ordered, key=None, reverse=False):
-	return OrderedEnumerable(ordered._iterable, key, reverse, ordered)
+	return OrderedEnumerable(ordered.iterable, key, reverse, ordered)
 
-# thenby does'nt implement it
-#
-# if you want this.
-#
-# items.OrderBy(item => item.first)
-#      .ThenByDescending(item => item.second);
-#
-# it likes
-#
-# items.orderby(key=lambda item: (item.first, -item.second))
+@linqmethod(OrderedEnumerable)
+def thenby_descending(ordered, key=None, reverse=False):
+	return thenby(ordered, key=key, reverse=True)
 
 @linqmethod(Enumerable)
 @lazymethod(Enumerable)
