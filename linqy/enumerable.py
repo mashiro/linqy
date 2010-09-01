@@ -17,6 +17,31 @@ class Enumerable(object):
 	def __iter__(self):
 		return self.generator()
 
+class SequenceEnumerable(Enumerable):
+	def __init__(self, sequence):
+		self.sequence = sequence
+		self.index = 0
+	
+	def __iter__(self):
+		self.index = 0
+		return self
+
+	def __next__(self):
+		if self.index < len(self.sequence):
+			result = self.sequence[self.index]
+			self.index += 1
+			return result
+		raise StopIteration
+
+	def next(self):
+		return self.__next__()
+
+	def __len__(self):
+		return len(self.sequence)
+
+	def __getitem__(self, key):
+		return self.sequence[key]
+
 class OrderedEnumerable(Enumerable):
 	def __init__(self, iterable, key, reverse, parent=None):
 		self.iterable = iterable
@@ -104,6 +129,8 @@ def countup(start=0, step=1):
 def asenumerable(iterable):
 	if isinstance(iterable, Enumerable):
 		return iterable
+	if issequence(iterable):
+		return SequenceEnumerable(iterable)
 	else:
 		return Enumerable(lambda: iter(iterable))
 
@@ -178,7 +205,7 @@ def thenby_descending(ordered, key=None, reverse=False):
 @linqmethod(Enumerable)
 @lazymethod(Enumerable)
 def reverse(iterable):
-	return reversed(list(iterable))
+	return reversed(tosequence(iterable))
 
 
 # partitioning

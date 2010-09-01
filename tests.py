@@ -32,7 +32,11 @@ class FunctionTests(unittest.TestCase):
 		self.assertEqual(f(2,3), 6)
 		self.assertEqual(f.index, 1)
 
-class EnumerableTests(unittest.TestCase):
+class ConvertionTests(unittest.TestCase):
+	def test_asenumerable(self):
+		self.assertTrue(isinstance(linqy.asenumerable([1,2,3]), linqy.Enumerable))
+		self.assertTrue(isinstance(linqy.asenumerable(linqy.make([1,2,3])), linqy.Enumerable))
+
 	def test_toarray(self):
 		e = linqy.make([1,2,3,4,5])
 		self.assertEqual(e.toarray('i'), array('i', [1,2,3,4,5]))
