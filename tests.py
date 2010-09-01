@@ -34,8 +34,9 @@ class FunctionTests(unittest.TestCase):
 
 class ConvertionTests(unittest.TestCase):
 	def test_asenumerable(self):
-		self.assertTrue(isinstance(linqy.asenumerable([1,2,3]), linqy.Enumerable))
+		self.assertTrue(isinstance(linqy.asenumerable([1,2,3]), linqy.SequenceEnumerable))
 		self.assertTrue(isinstance(linqy.asenumerable(linqy.make([1,2,3])), linqy.Enumerable))
+		self.assertFalse(isinstance(linqy.asenumerable(linqy.range(5)), linqy.SequenceEnumerable))
 
 	def test_toarray(self):
 		e = linqy.make([1,2,3,4,5])
@@ -135,28 +136,57 @@ class FilteringTests(unittest.TestCase):
 		self.assertEqual(list(e), [1,3,5])
 	
 class OrderingTests(unittest.TestCase):
+	@classmethod
+	def makeseq(cls):
+		return [{'id': 1, 'name':  'apple', 'price': 100, 'num':  8},
+				{'id': 2, 'name': 'orange', 'price': 100, 'num': 10},
+				{'id': 3, 'name':  'apple', 'price': 120, 'num':  8},
+				{'id': 4, 'name': 'orange', 'price': 120, 'num':  8},
+				{'id': 5, 'name': 'orange', 'price':  80, 'num': 10}]
+
 	def test_orderby(self):
-		seq = [[1,2],[2,1],[3,2],[2,2],[1,1]]
+		seq = self.makeseq()
+		a,b,c,d,e = seq
+		enum = linqy.make(seq).orderby(lambda x: x['name'])
+		self.assertEqual(list(enum), [a,c,b,d,e])
 
-		a = [[1,2],[1,1],[2,1],[2,2],[3,2]]
-		e = linqy.make(seq).orderby(lambda x: x[0])
-		self.assertEqual(list(e), a)
+	def test_orderby_descending(self):
+		seq = self.makeseq()
+		a,b,c,d,e = seq
+		enum = linqy.make(seq).orderby_descending(lambda x: x['name'])
+		self.assertEqual(list(enum), [b,d,e,a,c])
+	
+	def test_thenby(self):
+		seq = self.makeseq()
+		a,b,c,d,e = seq
+		enum = linqy.make(seq).orderby(lambda x: x['name']).thenby(lambda x: x['price'])
+		self.assertEqual(list(enum), [a,c,e,b,d])
+		self.assertRaises(AttributeError, lambda: linqy.range(10).thenby(lambda x: x))
 
-		a = [[3,2],[2,1],[2,2],[1,2],[1,1]]
-		e = linqy.make(seq).orderby(lambda x: x[0], reverse=True)
-		self.assertEqual(list(e), a)
-
-		a = [[2,1],[1,1],[1,2],[3,2],[2,2]]
-		e = linqy.make(seq).orderby(lambda x: x[1])
-		self.assertEqual(list(e), a)
-
-		a = [[1,1],[2,1],[1,2],[2,2],[3,2]]
-		e = linqy.make(seq).orderby(lambda x: (x[1], x[0]))
-		self.assertEqual(list(e), a)
+	def test_thenby_descending(self):
+		seq = self.makeseq()
+		a,b,c,d,e = seq
+		enum = linqy.make(seq).orderby(lambda x: x['name']).thenby_descending(lambda x: x['price'])
+		self.assertEqual(list(enum), [c,a,d,b,e])
+		self.assertRaises(AttributeError, lambda: linqy.range(10).thenby_descending(lambda x: x))
+	
+	def test_orderby_thenby(self):
+		seq = self.makeseq()
+		a,b,c,d,e = seq
+		enum = (linqy.make(seq)
+				.orderby(lambda x: x['num'])
+				.thenby(lambda x: x['price'])
+				.thenby_descending(lambda x: x['name']))
+		self.assertEqual(list(enum), [a,d,c,e,b])
 	
 	def test_reverse(self):
-		e = linqy.make([1,2,3,4,5]).reverse()
-		self.assertEqual(list(e), [5,4,3,2,1])
+		seq = linqy.make([1,2,3,4,5])
+		e1 = seq.reverse()
+		e2 = e1.reverse()
+		e3 = e2.reverse()
+		self.assertEqual(list(e1), [5,4,3,2,1])
+		self.assertEqual(list(e2), [1,2,3,4,5])
+		self.assertTrue(linqy.sequenceequal(e1, e3))
 
 class PartitioningTests(unittest.TestCase):
 	def test_skip(self):
