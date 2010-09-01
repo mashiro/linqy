@@ -2,9 +2,12 @@
 # -*- encoding: utf-8 -*-
 import functools
 import itertools
+from array import array
 from linqy.function import Function
 from linqy.utils import *
 
+# enumerable
+#--------------------------------------------------------------------------------
 class Enumerable(object):
 	''' enumerable object '''
 
@@ -41,6 +44,8 @@ class OrderedEnumerable(Enumerable):
 		return reversed(results)
 
 
+# decolator
+#--------------------------------------------------------------------------------
 def linqmethod(type):
 	def outer(func):
 		@functools.wraps(func)
@@ -101,6 +106,10 @@ def asenumerable(iterable):
 		return iterable
 	else:
 		return Enumerable(lambda: iter(iterable))
+
+@linqmethod(Enumerable)
+def toarray(iterable, typecode):
+	return array(typecode, iterable)
 
 @linqmethod(Enumerable)
 def tolist(iterable):

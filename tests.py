@@ -2,6 +2,7 @@
 # -*- encoding: utf-8 -*-
 import unittest
 import linqy
+from array import array
 
 class FunctionTests(unittest.TestCase):
 	def test_identity(self):
@@ -32,10 +33,14 @@ class FunctionTests(unittest.TestCase):
 		self.assertEqual(f.index, 1)
 
 class EnumerableTests(unittest.TestCase):
+	def test_toarray(self):
+		e = linqy.make([1,2,3,4,5])
+		self.assertEqual(e.toarray('i'), array('i', [1,2,3,4,5]))
+
 	def test_tolist(self):
 		e = linqy.make([1,2,3,4,5])
 		self.assertEqual(e.tolist(), [1,2,3,4,5])
-
+	
 class EqualityTests(unittest.TestCase):
 	def test_sequenceequal(self):
 		self.assertTrue(linqy.make([1,2,3]).sequenceequal(linqy.make([1,2,3])))
@@ -149,7 +154,6 @@ class OrderingTests(unittest.TestCase):
 		e = linqy.make([1,2,3,4,5]).reverse()
 		self.assertEqual(list(e), [5,4,3,2,1])
 
-
 class PartitioningTests(unittest.TestCase):
 	def test_skip(self):
 		e = linqy.make([1,2,3,4,5]).skip(3)
@@ -202,14 +206,9 @@ class ActionTests(unittest.TestCase):
 	
 def suite():
 	suite = unittest.TestSuite()
-	suite.addTests(unittest.makeSuite(FunctionTests))
-	suite.addTests(unittest.makeSuite(EnumerableTests))
-	suite.addTests(unittest.makeSuite(EqualityTests))
-	suite.addTests(unittest.makeSuite(GenerateTests))
-	suite.addTests(unittest.makeSuite(ProjectionTests))
-	suite.addTests(unittest.makeSuite(FilteringTests))
-	suite.addTests(unittest.makeSuite(PartitioningTests))
-	suite.addTests(unittest.makeSuite(ActionTests))
+	for v in globals().values():
+		if isinstance(v, type) and issubclass(v, unittest.TestCase):
+			suite.addTests(unittest.makeSuite(v))
 	return suite
 
 if __name__ == '__main__':
