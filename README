@@ -3,4 +3,4 @@ LINQ like library for Python
 Author: mashiro
 License: MIT
 Usage: examples/*.py
-Required: Python 2.5 or newer
+Required: Python 2.4 or newer

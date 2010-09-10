@@ -188,6 +188,37 @@ class OrderingTests(unittest.TestCase):
         self.assertEqual(list(e2), [1,2,3,4,5])
         self.assertTrue(linqy.sequenceequal(e1, e3))
 
+    def make_random_range(self):
+        from random import randint
+        return [map(lambda x: randint(0,10), range(3)) for i in range(100)]
+
+    def test_orderby_random1(self):
+        for i in range(10):
+            r = self.make_random_range()
+            r1 = sorted(r, key=lambda x: x[0])
+            r2 = (linqy.make(r)
+                    .orderby(lambda x: x[0])
+                    .tolist())
+            self.assertEqual(r1, r2)
+
+    def test_orderby_random2(self):
+        for i in range(10):
+            r = self.make_random_range()
+            r1 = sorted(r, key=lambda x: (x[0], -x[2], x[1]))
+            r2 = (linqy.make(r)
+                    .orderby(lambda x: x[0])
+                    .thenby_descending(lambda x: x[2])
+                    .thenby(lambda x: x[1])
+                    .tolist())
+            self.assertEqual(r1, r2)
+
+    def test_reverse_random(self):
+        for i in range(10):
+            r = self.make_random_range()
+            r1 = list(reversed(r))
+            r2 = linqy.make(r).reverse().tolist()
+            self.assertEqual(r1, r2)
+
 class PartitioningTests(unittest.TestCase):
     def test_skip(self):
         e = linqy.make([1,2,3,4,5]).skip(3)

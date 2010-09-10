@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import functools
 import itertools
 from array import array
 from linqy.function import Function
+from linqy.comparison import Reverse
 from linqy.utils import *
 
 # enumerable
@@ -44,28 +44,28 @@ class SequenceEnumerable(Enumerable):
 
 class OrderedEnumerable(Enumerable):
     def __init__(self, iterable, key, reverse, parent=None):
-        self.iterable = iterable
-        self.key = key
-        self.reverse = reverse
-        self.parent = parent
+        self._iterable = iterable
+        self._key = key
+        self._reverse = reverse
+        self._parent = parent
 
     def __iter__(self):
         def key(context):
-            if context.reverse:
-                return lambda x: Negate(context.key(x))
+            if context._reverse:
+                return lambda x: Reverse(context._key(x))
             else:
-                return lambda x: context.key(x)
+                return lambda x: context._key(x)
 
         keys = [key(context) for context in self.contexts()]
         func = lambda x: tuple(imap(lambda key: key(x), keys))
-        return iter(sorted(self.iterable, key=func))
+        return iter(sorted(self._iterable, key=func))
 
     def contexts(self):
         results = []
         context = self
         while context is not None:
             results.append(context)
-            context = context.parent
+            context = context._parent
         return reversed(results)
 
 
@@ -73,7 +73,7 @@ class OrderedEnumerable(Enumerable):
 #--------------------------------------------------------------------------------
 def linqmethod(type):
     def outer(func):
-        @functools.wraps(func)
+        @wraps(func)
         def method(self, *args, **kwargs):
             return func(self, *args, **kwargs)
         setattr(type, func.__name__, method)
@@ -82,7 +82,7 @@ def linqmethod(type):
 
 def lazymethod(type):
     def outer(func):
-        @functools.wraps(func)
+        @wraps(func)
         def inner(*args, **kwargs):
             return type(lambda: func(*args, **kwargs))
         return inner
@@ -196,7 +196,7 @@ def orderby_descending(iterable, key=None):
 
 @linqmethod(OrderedEnumerable)
 def thenby(ordered, key=None, reverse=False):
-    return OrderedEnumerable(ordered.iterable, key, reverse, ordered)
+    return OrderedEnumerable(ordered._iterable, key, reverse, ordered)
 
 @linqmethod(OrderedEnumerable)
 def thenby_descending(ordered, key=None, reverse=False):
