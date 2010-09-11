@@ -3,8 +3,15 @@
 import sys
 import itertools
 
-# functools.wraps for Python2.4
+def anonymouse(**kwargs):
+    ''' make anonymouse type instance. '''
+    return type('', (object,), kwargs)()
+
+# nil value
+nil = anonymouse()
+
 def wraps(wrapped):
+    ''' functools.wraps for Python2.4 '''
     def inner(wrapper):
         wrapper.__module__ = wrapped.__module__
         wrapper.__name__ = wrapped.__name__
@@ -14,25 +21,18 @@ def wraps(wrapped):
     return inner
 
 def not_(func):
+    @wraps(func)
     def inner(*args, **kwargs):
         return not func(*args, **kwargs)
     return inner
 
-def issequence(object):
-    return hasattr(object, '__len__') and hasattr(object, '__getitem__')
+def always(value):
+    def inner(*args, **kwargs):
+        return value
+    return inner
 
-def tosequence(iterable):
-    if issequence(iterable):
-        return iterable
-    else:
-        return list(iterable)
-
-def anonymouse(**kwargs):
-    ''' make anonymouse type instance '''
-    return type('', (object,), kwargs)()
-
-nil = anonymouse()
 def next(iterator, default=nil):
+    ''' return the next item from the iterator. '''
     f = getattr(iterator, 'next', None)
     if f is None:
         f = getattr(iterator, '__next__')
@@ -45,13 +45,21 @@ def next(iterator, default=nil):
         except StopIteration:
             return default
 
+def issequence(object):
+    return hasattr(object, '__len__') and hasattr(object, '__getitem__')
 
-
-class AttributeNotFoundError(Exception):
-    pass
+def tosequence(iterable):
+    if issequence(iterable):
+        return iterable
+    else:
+        return list(iterable)
 
 def findattr(*candidates):
     ''' find a attribute in module or dict '''
+
+    class AttributeNotFoundError(Exception):
+        pass
+
     for candidate in candidates:
         if isinstance(candidate, tuple):
             module, name = candidate
@@ -65,6 +73,7 @@ def findattr(*candidates):
             return candidate
     raise AttributeNotFoundError
 
+# compatible python2.x,3.x
 imap = findattr((itertools, 'imap'), (__builtins__, 'map'))
 izip = findattr((itertools, 'izip'), (__builtins__, 'zip'))
 ifilter = findattr((itertools, 'ifilter'), (__builtins__, 'filter'))

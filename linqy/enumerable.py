@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 import itertools
 from array import array
-from linqy.function import Function
-from linqy.comparison import Reverse
+from linqy.function import *
+from linqy.comparison import *
 from linqy.utils import *
 
 # Enumerables {{{1
@@ -220,7 +220,15 @@ def sequenceequal(first, second, selector=None):
 # Element Operations {{{1
 @linqmethod(Enumerable)
 def elementat(iterable, index, default=nil):
-    return next(itertools.islice(iterable, index, None), default)
+    try:
+        return next(itertools.islice(iterable, index, None), default)
+    except StopIteration:
+        raise IndexError('enuemrable index out of range')
+
+@linqmethod(Enumerable)
+def first(iterable, pred=None, default=nil):
+    pred = Not(Function(pred) or always(True))
+    return elementat(skipwhile(iterable, pred), 0, default=default)
 
 
 # Converting Operations {{{1

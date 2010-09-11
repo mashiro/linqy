@@ -10,7 +10,6 @@ __version__ = '0.2.4'
 __url__ = 'http://github.com/mashiro/linqy'
 
 from linqy.enumerable import (
-        Enumerable, SequenceEnumerable, OrderedEnumerable,
         make, empty, range, repeat, cycle, countup,
         select, selectmany, zip, enumerate,
         where, oftype,
@@ -19,6 +18,5 @@ from linqy.enumerable import (
         sequenceequal,
         asenumerable, toarray, tolist,
         foreach, do)
-from linqy.function import Function
 from linqy.utils import anonymouse
 
