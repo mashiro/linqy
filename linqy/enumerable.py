@@ -230,6 +230,10 @@ def first(iterable, pred=None, default=nil):
     pred = Not(Function(pred) or always(True))
     return elementat(skipwhile(iterable, pred), 0, default=default)
 
+@linqmethod(Enumerable)
+def last(iterable, pred=None, default=nil):
+    return first(reverse(iterable), pred=pred, default=default)
+
 
 # Converting Operations {{{1
 @linqmethod(Enumerable)
