@@ -12,12 +12,12 @@ __url__ = 'http://github.com/mashiro/linqy'
 from linqy.enumerable import (
         Enumerable, SequenceEnumerable, OrderedEnumerable,
         make, empty, range, repeat, cycle, countup,
-        asenumerable, toarray, tolist,
         select, selectmany, zip, enumerate,
         where, oftype,
-        orderby, orderby_descending, thenby, thenby_descending, reverse,
         skip, skipwhile, take, takewhile,
+        orderby, orderby_descending, thenby, thenby_descending, reverse,
         sequenceequal,
+        asenumerable, toarray, tolist,
         foreach, do)
 from linqy.function import Function
 from linqy.utils import anonymouse

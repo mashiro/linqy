@@ -6,8 +6,7 @@ from linqy.function import Function
 from linqy.comparison import Reverse
 from linqy.utils import *
 
-# enumerable
-#--------------------------------------------------------------------------------
+# Enumerables {{{1
 class Enumerable(object):
     ''' enumerable object '''
 
@@ -69,8 +68,7 @@ class OrderedEnumerable(Enumerable):
         return reversed(results)
 
 
-# decolator
-#--------------------------------------------------------------------------------
+# Decolators {{{1
 def linqmethod(type):
     def outer(func):
         @wraps(func)
@@ -89,8 +87,7 @@ def lazymethod(type):
     return outer
 
 
-# generation
-#--------------------------------------------------------------------------------
+# Generation Operations {{{1
 def make(iterable):
     return asenumerable(iterable)
 
@@ -123,28 +120,7 @@ def countup(start=0, step=1):
         n += step
 
 
-# conversions
-#--------------------------------------------------------------------------------
-@linqmethod(Enumerable)
-def asenumerable(iterable):
-    if isinstance(iterable, Enumerable):
-        return iterable
-    if issequence(iterable):
-        return SequenceEnumerable(iterable)
-    else:
-        return Enumerable(lambda: iter(iterable))
-
-@linqmethod(Enumerable)
-def toarray(iterable, typecode):
-    return array(typecode, iterable)
-
-@linqmethod(Enumerable)
-def tolist(iterable):
-    return list(iterable)
-
-
-# projection
-#--------------------------------------------------------------------------------
+# Projection Operations {{{1
 @linqmethod(Enumerable)
 @lazymethod(Enumerable)
 def select(iterable, selector):
@@ -172,8 +148,7 @@ def enumerate(iterable):
     return countup().zip(iterable)
 
 
-# filtering
-#--------------------------------------------------------------------------------
+# Filtering Operatoins {{{1
 @linqmethod(Enumerable)
 @lazymethod(Enumerable)
 def where(iterable, pred):
@@ -184,8 +159,29 @@ def oftype(iterable, type):
     return where(iterable, lambda x: isinstance(x, type))
 
 
-# ordering
-#--------------------------------------------------------------------------------
+# Partitioning Operations {{{1
+@linqmethod(Enumerable)
+@lazymethod(Enumerable)
+def skip(iterable, count):
+    return itertools.islice(iterable, count, None)
+
+@linqmethod(Enumerable)
+@lazymethod(Enumerable)
+def skipwhile(iterable, pred):
+    return itertools.dropwhile(Function(pred), iterable)
+
+@linqmethod(Enumerable)
+@lazymethod(Enumerable)
+def take(iterable, count):
+    return itertools.islice(iterable, count)
+
+@linqmethod(Enumerable)
+@lazymethod(Enumerable)
+def takewhile(iterable, pred):
+    return itertools.takewhile(Function(pred), iterable)
+
+
+# Ordering Operations {{{1
 @linqmethod(Enumerable)
 def orderby(iterable, key=None, reverse=False):
     return OrderedEnumerable(iterable, key, reverse)
@@ -208,31 +204,7 @@ def reverse(iterable):
     return reversed(tosequence(iterable))
 
 
-# partitioning
-#--------------------------------------------------------------------------------
-@linqmethod(Enumerable)
-@lazymethod(Enumerable)
-def skip(iterable, count):
-    return itertools.islice(iterable, count, None)
-
-@linqmethod(Enumerable)
-@lazymethod(Enumerable)
-def skipwhile(iterable, pred):
-    return itertools.dropwhile(Function(pred), iterable)
-
-@linqmethod(Enumerable)
-@lazymethod(Enumerable)
-def take(iterable, count):
-    return itertools.islice(iterable, count)
-
-@linqmethod(Enumerable)
-@lazymethod(Enumerable)
-def takewhile(iterable, pred):
-    return itertools.takewhile(Function(pred), iterable)
-
-
-# equality
-#--------------------------------------------------------------------------------
+# Equality Operations {{{1
 @linqmethod(Enumerable)
 def sequenceequal(first, second, selector=None):
     selector = Function(selector)
@@ -245,8 +217,32 @@ def sequenceequal(first, second, selector=None):
     return True
 
 
-# action
-#--------------------------------------------------------------------------------
+# Element Operations {{{1
+@linqmethod(Enumerable)
+def elementat(iterable, index, default=nil):
+    return next(itertools.islice(iterable, index, None), default)
+
+
+# Converting Operations {{{1
+@linqmethod(Enumerable)
+def asenumerable(iterable):
+    if isinstance(iterable, Enumerable):
+        return iterable
+    if issequence(iterable):
+        return SequenceEnumerable(iterable)
+    else:
+        return Enumerable(lambda: iter(iterable))
+
+@linqmethod(Enumerable)
+def toarray(iterable, typecode):
+    return array(typecode, iterable)
+
+@linqmethod(Enumerable)
+def tolist(iterable):
+    return list(iterable)
+
+
+# Action Operations {{{1
 @linqmethod(Enumerable)
 def foreach(iterable, action):
     action = Function(action)
@@ -260,5 +256,4 @@ def do(iterable, action):
     for item in iterable:
         action(item)
         yield item
-
 
