@@ -18,6 +18,8 @@ from linqy.enumerable import (
         skip, skipwhile, take, takewhile,
         orderby, orderby_descending, thenby, thenby_descending, reverse,
         sequenceequal,
+        all, any,
+        elementat, first, last, single,
         asenumerable, toarray, tolist,
         foreach, do)
 from linqy.function import Function, Not
