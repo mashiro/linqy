@@ -20,7 +20,6 @@ def sample_stream():
 
 def main():
     stream = sample_stream()
-    ids = stream.take(1)
     statuses = (stream
             .where(lambda s: 'user' in s)
             .select(lambda s: linqy.anonymouse(
