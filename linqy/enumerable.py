@@ -24,8 +24,7 @@ class SequenceEnumerable(Enumerable):
         self._index = 0
 
     def __iter__(self):
-        self._index = 0
-        return self
+        return SequenceEnumerable(self._sequence)
 
     def __next__(self):
         if self._index < len(self._sequence):
@@ -37,10 +36,13 @@ class SequenceEnumerable(Enumerable):
     next = __next__
 
     def __len__(self):
-        return len(self._sequence)
+        return self._sequence.__len__()
 
     def __getitem__(self, key):
-        return self._sequence[key]
+        return self._sequence.__getitem__(key)
+
+    def __contains__(self, item):
+        return self._sequence.__contains__(item)
 
 class OrderedEnumerable(Enumerable):
     ''' ordered enumerable object '''
@@ -232,6 +234,10 @@ def any(iterable, pred=None):
     for x in ifilter(Function(pred or always(True)), iterable):
         return True
     return False
+
+@extensionmethod(Enumerable)
+def contain(iterable, value):
+    return value in tosequence(iterable)
 
 
 # Element Operations {{{1

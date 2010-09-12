@@ -256,6 +256,12 @@ class QuantifierTests(unittest.TestCase): # {{{1
         self.assertFalse(linqy.empty().any(lambda x: x > 3))
         self.assertFalse(linqy.empty().any())
 
+    def test_contain(self):
+        self.assertTrue(linqy.make([1,2,3]).contain(1))
+        self.assertTrue(linqy.make([1,2,3]).contain(2))
+        self.assertTrue(linqy.make([1,2,3]).contain(3))
+        self.assertFalse(linqy.make([1,2,3]).contain(4))
+
 
 class ElementTests(unittest.TestCase): # {{{1
     def test_elementat(self):

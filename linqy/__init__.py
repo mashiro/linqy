@@ -18,7 +18,7 @@ from linqy.enumerable import (
         skip, skipwhile, take, takewhile,
         orderby, orderby_descending, thenby, thenby_descending, reverse,
         sequenceequal,
-        all, any,
+        all, any, contain,
         elementat, first, last, single,
         asenumerable, toarray, tolist,
         foreach, do)

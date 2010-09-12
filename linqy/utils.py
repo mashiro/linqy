@@ -56,17 +56,18 @@ def next(iterator, default=Undefined):
             return default
 
 def isgenerator(object):
+    ''' return true if the object is a generator. '''
     return isinstance(object, types.GeneratorType)
 
 
 def isgeneratorfunction(object):
-    ''' Return true if the object is a user-defined generator function. '''
+    ''' return true if the object is a user-defined generator function. '''
     CO_GENERATOR = 0x20
     return ((inspect.isfunction(object) or inspect.ismethod(object)) and
             object.func_code.co_flags & CO_GENERATOR)
 
 def issequence(object):
-    ''' Return true if the object is a generator. '''
+    ''' return true if the object is a sequence. '''
     return hasattr(object, '__len__') and hasattr(object, '__getitem__')
 
 def tosequence(iterable):
