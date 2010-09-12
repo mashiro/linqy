@@ -7,8 +7,8 @@ def anonymouse(**kwargs):
     ''' make anonymouse type instance. '''
     return type('', (object,), kwargs)()
 
-# nil value
-nil = anonymouse()
+# Undefeiend value.
+Undefined = anonymouse()
 
 def wraps(wrapped):
     ''' functools.wraps for Python2.4 '''
@@ -31,17 +31,20 @@ def always(value):
         return value
     return inner
 
-def next(iterator, default=nil):
+def next(iterator, default=Undefined):
     ''' return the next item from the iterator. '''
-    f = getattr(iterator, 'next', None)
-    if f is None:
-        f = getattr(iterator, '__next__')
+    iterate = getattr(iterator, 'next', None)
+    if iterate is None:
+        iterate = getattr(iterator, '__next__', None)
+        if iterate is None:
+            name = type(iterator).__name__
+            raise TypeError('%s object is not an iterator' % name)
 
-    if default == nil:
-        return f()
+    if default == Undefined:
+        return iterate()
     else:
         try:
-            return f()
+            return iterate()
         except StopIteration:
             return default
 
@@ -78,6 +81,5 @@ imap = findattr((itertools, 'imap'), (__builtins__, 'map'))
 izip = findattr((itertools, 'izip'), (__builtins__, 'zip'))
 ifilter = findattr((itertools, 'ifilter'), (__builtins__, 'filter'))
 ifilterfalse = findattr((itertools, 'ifilterfalse'), (itertools, 'filterfalse'))
-irange = findattr((__builtins__, 'xrange'), range)
-basestring = findattr((__builtins__, 'basestring'), (__builtins__, 'str'))
+irange = findattr((__builtins__, 'xrange'), (__builtins__, 'range'))
 

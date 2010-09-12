@@ -131,7 +131,7 @@ def select(iterable, selector):
 def selectmany(iterable, selector, result=None):
     selector = Function(selector)
     result = Function(result)
-    for x in make(iterable):
+    for x in asenumerable(iterable):
         for y in selector(x):
             if result:
                 yield result(x, y)
@@ -219,20 +219,20 @@ def sequenceequal(first, second, selector=None):
 
 # Element Operations {{{1
 @linqmethod(Enumerable)
-def elementat(iterable, index, default=nil):
+def elementat(iterable, index, default=Undefined):
     try:
-        return next(itertools.islice(iterable, index, None), default)
+        return next(iter(skip(iterable, index)), default)
     except StopIteration:
         raise IndexError('enuemrable index out of range')
 
 @linqmethod(Enumerable)
-def first(iterable, pred=None, default=nil):
+def first(iterable, pred=None, default=Undefined):
     pred = Not(Function(pred) or always(True))
-    return elementat(skipwhile(iterable, pred), 0, default=default)
+    return elementat(skipwhile(iterable, pred), 0, default)
 
 @linqmethod(Enumerable)
-def last(iterable, pred=None, default=nil):
-    return first(reverse(iterable), pred=pred, default=default)
+def last(iterable, pred=None, default=Undefined):
+    return first(reverse(iterable), pred, default)
 
 
 # Converting Operations {{{1

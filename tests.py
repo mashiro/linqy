@@ -2,13 +2,11 @@
 # -*- coding: utf-8 -*-
 import unittest
 import linqy
-from linqy.function import Function, Not
-from linqy.enumerable import Enumerable, SequenceEnumerable, OrderedEnumerable
 from array import array
 
 class FunctionTests(unittest.TestCase): # {{{1
     def test_identity(self):
-        f = Function(None)
+        f = linqy.Function(None)
         self.assertFalse(f)
         self.assertEqual(f.arity, 1)
         self.assertEqual(f.index, 0)
@@ -16,7 +14,7 @@ class FunctionTests(unittest.TestCase): # {{{1
         self.assertEqual(f.index, 1)
 
     def test_lambda(self):
-        f = Function(lambda x, y: x * y)
+        f = linqy.Function(lambda x, y: x * y)
         self.assertTrue(f)
         self.assertEqual(f.arity, 2)
         self.assertEqual(f.index, 0)
@@ -27,7 +25,7 @@ class FunctionTests(unittest.TestCase): # {{{1
         class inner(object):
             def f(self, x, y):
                 return x * y
-        f = Function(inner().f)
+        f = linqy.Function(inner().f)
         self.assertTrue(f)
         self.assertEqual(f.arity, 2)
         self.assertEqual(f.index, 0)
@@ -35,8 +33,8 @@ class FunctionTests(unittest.TestCase): # {{{1
         self.assertEqual(f.index, 1)
 
     def test_not(self):
-        f = Not(Function(lambda x: x == 1))
-        self.assertEqual(f.arity, 1)
+        f = linqy.Not(linqy.Function(lambda x, i: x == 1))
+        self.assertEqual(f.arity, 2)
         self.assertEqual(f.index, 0)
         self.assertTrue(f(2))
         self.assertFalse(f(1))
@@ -45,21 +43,21 @@ class FunctionTests(unittest.TestCase): # {{{1
 class GenerateTests(unittest.TestCase): # {{{1
     def test_make(self):
         e = linqy.make([1,2,3])
-        self.assertTrue(isinstance(e, Enumerable))
+        self.assertTrue(isinstance(e, linqy.Enumerable))
         self.assertEqual(list(e), [1,2,3])
 
     def test_empty(self):
         e = linqy.empty()
-        self.assertTrue(isinstance(e, Enumerable))
+        self.assertTrue(isinstance(e, linqy.Enumerable))
         self.assertEqual(list(e), [])
 
     def test_range(self):
         e1 = linqy.range(3)
         e2 = linqy.range(3, 6)
         e3 = linqy.range(1, 6, 2)
-        self.assertTrue(isinstance(e1, Enumerable))
-        self.assertTrue(isinstance(e2, Enumerable))
-        self.assertTrue(isinstance(e3, Enumerable))
+        self.assertTrue(isinstance(e1, linqy.Enumerable))
+        self.assertTrue(isinstance(e2, linqy.Enumerable))
+        self.assertTrue(isinstance(e3, linqy.Enumerable))
         self.assertEqual(list(e1), [0,1,2])
         self.assertEqual(list(e2), [3,4,5])
         self.assertEqual(list(e3), [1,3,5])
@@ -67,14 +65,14 @@ class GenerateTests(unittest.TestCase): # {{{1
     def test_repeat(self):
         e1 = linqy.repeat(1, 3)
         e2 = linqy.repeat(1).take(3)
-        self.assertTrue(isinstance(e1, Enumerable))
-        self.assertTrue(isinstance(e2, Enumerable))
+        self.assertTrue(isinstance(e1, linqy.Enumerable))
+        self.assertTrue(isinstance(e2, linqy.Enumerable))
         self.assertEqual(list(e1), [1,1,1])
         self.assertEqual(list(e2), [1,1,1])
 
     def test_cycle(self):
         e = linqy.cycle([1,2,3]).take(10)
-        self.assertTrue(isinstance(e, Enumerable))
+        self.assertTrue(isinstance(e, linqy.Enumerable))
         self.assertEqual(list(e), [1,2,3,1,2,3,1,2,3,1])
 
     def test_countup(self):
@@ -82,10 +80,10 @@ class GenerateTests(unittest.TestCase): # {{{1
         e2 = linqy.countup(3).take(3)
         e3 = linqy.countup(3,3).take(3)
         e4 = linqy.countup(3,-3).take(3)
-        self.assertTrue(isinstance(e1, Enumerable))
-        self.assertTrue(isinstance(e2, Enumerable))
-        self.assertTrue(isinstance(e3, Enumerable))
-        self.assertTrue(isinstance(e4, Enumerable))
+        self.assertTrue(isinstance(e1, linqy.Enumerable))
+        self.assertTrue(isinstance(e2, linqy.Enumerable))
+        self.assertTrue(isinstance(e3, linqy.Enumerable))
+        self.assertTrue(isinstance(e4, linqy.Enumerable))
         self.assertEqual(list(e1), [0,1,2])
         self.assertEqual(list(e2), [3,4,5])
         self.assertEqual(list(e3), [3,6,9])
@@ -199,9 +197,9 @@ class OrderingTests(unittest.TestCase): # {{{1
         self.assertEqual(list(e2), [1,2,3,4,5])
         self.assertTrue(linqy.sequenceequal(e1, e3))
 
-    def make_random_range(self):
+    def make_random_range(self, min=0, max=10, col=3, row=100):
         from random import randint
-        return [map(lambda x: randint(0,10), range(3)) for i in range(100)]
+        return [tuple(map(lambda x: randint(min, max), range(col))) for i in range(row)]
 
     def test_orderby_random1(self):
         for i in range(10):
@@ -290,9 +288,9 @@ class ElementTests(unittest.TestCase): # {{{1
 
 class ConvertionTests(unittest.TestCase): # {{{1
     def test_asenumerable(self):
-        self.assertTrue(isinstance(linqy.asenumerable([1,2,3]), SequenceEnumerable))
-        self.assertTrue(isinstance(linqy.asenumerable(linqy.make([1,2,3])), Enumerable))
-        self.assertFalse(isinstance(linqy.asenumerable(linqy.range(5)), SequenceEnumerable))
+        self.assertTrue(isinstance(linqy.asenumerable([1,2,3]), linqy.SequenceEnumerable))
+        self.assertTrue(isinstance(linqy.asenumerable(linqy.make([1,2,3])), linqy.Enumerable))
+        self.assertFalse(isinstance(linqy.asenumerable(linqy.range(5)), linqy.SequenceEnumerable))
 
     def test_toarray(self):
         e = linqy.make([1,2,3,4,5])
