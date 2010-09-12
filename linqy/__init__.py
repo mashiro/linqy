@@ -11,7 +11,7 @@ __url__ = 'http://github.com/mashiro/linqy'
 
 from linqy.enumerable import (
         Enumerable, SequenceEnumerable, OrderedEnumerable,
-        linqmethod, lazymethod,
+        extensionmethod, lazymethod,
         make, empty, range, repeat, cycle, countup,
         select, selectmany, zip, enumerate,
         where, oftype,

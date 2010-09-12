@@ -284,7 +284,25 @@ class ElementTests(unittest.TestCase): # {{{1
         self.assertRaises(IndexError, lambda: e.last(pred=lambda x: x < 0))
         self.assertEqual(e.last(lambda x: x < 0, 100), 100)
 
+    def test_single(self):
+        self.assertEqual(linqy.make([1]).single(), 1)
+        self.assertRaises(ValueError, lambda: linqy.empty().single())
+        self.assertRaises(ValueError, lambda: linqy.make([1,2]).single())
 
+    def test_single_pred(self):
+        self.assertEqual(linqy.range(10).single(lambda x: x == 5), 5)
+        self.assertRaises(ValueError, lambda: linqy.range(10).single(lambda x: x > 5))
+        self.assertRaises(ValueError, lambda: linqy.range(10).single(lambda x: x > 100))
+
+    def test_single_default(self):
+        self.assertEqual(linqy.make([1]).single(), 1)
+        self.assertEqual(linqy.empty().single(default=100), 100)
+        self.assertRaises(ValueError, lambda: linqy.make([1,2]).single(default=100))
+
+    def test_single_pred_default(self):
+        self.assertEqual(linqy.range(10).single(lambda x: x == 5, default=100), 5)
+        self.assertRaises(ValueError, lambda: linqy.range(10).single(lambda x: x > 5, default=100))
+        self.assertEqual(linqy.range(10).single(lambda x: x > 100, default=100), 100)
 
 class ConvertionTests(unittest.TestCase): # {{{1
     def test_asenumerable(self):

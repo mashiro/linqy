@@ -72,12 +72,12 @@ class OrderedEnumerable(Enumerable):
 
 
 # Decolators {{{1
-def linqmethod(type):
+def extensionmethod(type):
     def outer(func):
         @wraps(func)
-        def method(self, *args, **kwargs):
+        def inner(self, *args, **kwargs):
             return func(self, *args, **kwargs)
-        setattr(type, func.__name__, method)
+        setattr(type, func.__name__, inner)
         return func
     return outer
 
@@ -124,12 +124,12 @@ def countup(start=0, step=1):
 
 
 # Projection Operations {{{1
-@linqmethod(Enumerable)
+@extensionmethod(Enumerable)
 @lazymethod(Enumerable)
 def select(iterable, selector):
     return imap(Function(selector), iterable)
 
-@linqmethod(Enumerable)
+@extensionmethod(Enumerable)
 @lazymethod(Enumerable)
 def selectmany(iterable, selector, result=None):
     selector = Function(selector)
@@ -141,74 +141,74 @@ def selectmany(iterable, selector, result=None):
             else:
                 yield y
 
-@linqmethod(Enumerable)
+@extensionmethod(Enumerable)
 @lazymethod(Enumerable)
 def zip(iterable, *iterables):
     return izip(iterable, *iterables)
 
-@linqmethod(Enumerable)
+@extensionmethod(Enumerable)
 def enumerate(iterable):
     return countup().zip(iterable)
 
 
 # Filtering Operatoins {{{1
-@linqmethod(Enumerable)
+@extensionmethod(Enumerable)
 @lazymethod(Enumerable)
 def where(iterable, pred):
     return ifilter(Function(pred), iterable)
 
-@linqmethod(Enumerable)
+@extensionmethod(Enumerable)
 def oftype(iterable, type):
     return where(iterable, lambda x: isinstance(x, type))
 
 
 # Partitioning Operations {{{1
-@linqmethod(Enumerable)
+@extensionmethod(Enumerable)
 @lazymethod(Enumerable)
 def skip(iterable, count):
     return itertools.islice(iterable, count, None)
 
-@linqmethod(Enumerable)
+@extensionmethod(Enumerable)
 @lazymethod(Enumerable)
 def skipwhile(iterable, pred):
     return itertools.dropwhile(Function(pred), iterable)
 
-@linqmethod(Enumerable)
+@extensionmethod(Enumerable)
 @lazymethod(Enumerable)
 def take(iterable, count):
     return itertools.islice(iterable, count)
 
-@linqmethod(Enumerable)
+@extensionmethod(Enumerable)
 @lazymethod(Enumerable)
 def takewhile(iterable, pred):
     return itertools.takewhile(Function(pred), iterable)
 
 
 # Ordering Operations {{{1
-@linqmethod(Enumerable)
+@extensionmethod(Enumerable)
 def orderby(iterable, key=None, reverse=False):
     return OrderedEnumerable(iterable, key, reverse)
 
-@linqmethod(Enumerable)
+@extensionmethod(Enumerable)
 def orderby_descending(iterable, key=None):
     return orderby(iterable, key=key, reverse=True)
 
-@linqmethod(OrderedEnumerable)
+@extensionmethod(OrderedEnumerable)
 def thenby(ordered, key=None, reverse=False):
     return OrderedEnumerable(ordered._iterable, key, reverse, ordered)
 
-@linqmethod(OrderedEnumerable)
+@extensionmethod(OrderedEnumerable)
 def thenby_descending(ordered, key=None, reverse=False):
     return thenby(ordered, key=key, reverse=True)
 
-@linqmethod(Enumerable)
+@extensionmethod(Enumerable)
 @lazymethod(Enumerable)
 def reverse(iterable):
     return reversed(tosequence(iterable))
 
 
 # Equality Operations {{{1
-@linqmethod(Enumerable)
+@extensionmethod(Enumerable)
 def sequenceequal(first, second, selector=None):
     selector = Function(selector)
     first, second = imap(list, [first, second])
@@ -221,25 +221,37 @@ def sequenceequal(first, second, selector=None):
 
 
 # Element Operations {{{1
-@linqmethod(Enumerable)
+@extensionmethod(Enumerable)
 def elementat(iterable, index, default=Undefined):
     try:
         return next(iter(skip(iterable, index)), default)
     except StopIteration:
         raise IndexError('enuemrable index out of range')
 
-@linqmethod(Enumerable)
+@extensionmethod(Enumerable)
 def first(iterable, pred=None, default=Undefined):
-    pred = Not(Function(pred) or always(True))
-    return elementat(skipwhile(iterable, pred), 0, default)
+    return where(iterable, Function(pred)).elementat(0, default)
 
-@linqmethod(Enumerable)
+@extensionmethod(Enumerable)
 def last(iterable, pred=None, default=Undefined):
-    return first(reverse(iterable), pred, default)
+    return reverse(iterable).first(pred, default)
+
+@extensionmethod(Enumerable)
+def single(iterable, pred=None, default=Undefined):
+    items = where(iterable, Function(pred)).tolist()
+    if len(items) == 0:
+        if default is Undefined:
+            raise ValueError('enumerable contains no matching element')
+        else:
+            return default
+    elif len(items) == 1:
+        return items[0]
+    else:
+        raise ValueError('enumerable contains more than one element')
 
 
 # Converting Operations {{{1
-@linqmethod(Enumerable)
+@extensionmethod(Enumerable)
 def asenumerable(iterable):
     if isinstance(iterable, Enumerable):
         # is enumerable
@@ -254,23 +266,23 @@ def asenumerable(iterable):
         # is iterable
         return Enumerable(lambda: iter(iterable))
 
-@linqmethod(Enumerable)
+@extensionmethod(Enumerable)
 def toarray(iterable, typecode):
     return array(typecode, iterable)
 
-@linqmethod(Enumerable)
+@extensionmethod(Enumerable)
 def tolist(iterable):
     return list(iterable)
 
 
 # Action Operations {{{1
-@linqmethod(Enumerable)
+@extensionmethod(Enumerable)
 def foreach(iterable, action):
     action = Function(action)
     for item in iterable:
         action(item)
 
-@linqmethod(Enumerable)
+@extensionmethod(Enumerable)
 @lazymethod(Enumerable)
 def do(iterable, action):
     action = Function(action)
