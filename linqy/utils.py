@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 import sys
 import itertools
+import inspect
+import types
 
 def anonymouse(**kwargs):
     ''' make anonymouse type instance. '''
@@ -48,7 +50,18 @@ def next(iterator, default=Undefined):
         except StopIteration:
             return default
 
+def isgenerator(object):
+    return isinstance(object, types.GeneratorType)
+
+
+def isgeneratorfunction(object):
+    ''' Return true if the object is a user-defined generator function. '''
+    CO_GENERATOR = 0x20
+    return ((inspect.isfunction(object) or inspect.ismethod(object)) and
+            object.func_code.co_flags & CO_GENERATOR)
+
 def issequence(object):
+    ''' Return true if the object is a generator. '''
     return hasattr(object, '__len__') and hasattr(object, '__getitem__')
 
 def tosequence(iterable):
@@ -58,7 +71,7 @@ def tosequence(iterable):
         return list(iterable)
 
 def findattr(*candidates):
-    ''' find a attribute in module or dict '''
+    ''' find a attribute in module or dict. '''
 
     class AttributeNotFoundError(Exception):
         pass

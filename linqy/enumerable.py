@@ -11,37 +11,40 @@ class Enumerable(object):
     ''' enumerable object '''
 
     def __init__(self, generator):
-        self.generator = generator
+        self._generator = generator
 
     def __iter__(self):
-        return self.generator()
+        return self._generator()
 
 class SequenceEnumerable(Enumerable):
+    ''' sequence enumerable object '''
+
     def __init__(self, sequence):
-        self.sequence = sequence
-        self.index = 0
+        self._sequence = sequence
+        self._index = 0
 
     def __iter__(self):
-        self.index = 0
+        self._index = 0
         return self
 
     def __next__(self):
-        if self.index < len(self.sequence):
-            result = self.sequence[self.index]
-            self.index += 1
+        if self._index < len(self._sequence):
+            result = self._sequence[self._index]
+            self._index += 1
             return result
         raise StopIteration
 
-    def next(self):
-        return self.__next__()
+    next = __next__
 
     def __len__(self):
-        return len(self.sequence)
+        return len(self._sequence)
 
     def __getitem__(self, key):
-        return self.sequence[key]
+        return self._sequence[key]
 
 class OrderedEnumerable(Enumerable):
+    ''' ordered enumerable object '''
+
     def __init__(self, iterable, key, reverse, parent=None):
         self._iterable = iterable
         self._key = key
@@ -239,10 +242,16 @@ def last(iterable, pred=None, default=Undefined):
 @linqmethod(Enumerable)
 def asenumerable(iterable):
     if isinstance(iterable, Enumerable):
+        # is enumerable
         return iterable
-    if issequence(iterable):
+    elif isgenerator(iterable) or isgeneratorfunction(iterable):
+        # is generator or generator function
+        return Enumerable(iterable)
+    elif issequence(iterable):
+        # is sequence
         return SequenceEnumerable(iterable)
     else:
+        # is iterable
         return Enumerable(lambda: iter(iterable))
 
 @linqmethod(Enumerable)

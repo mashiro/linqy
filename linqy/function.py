@@ -27,8 +27,7 @@ class Function(object):
     def __bool__(self):
         return not self.is_none
 
-    def __nonzero__(self):
-        return self.__bool__()
+    __nonzero__ = __bool__
 
     def __call__(self, *args, **kwargs):
         if self.spec[1] is None: # has varargs
