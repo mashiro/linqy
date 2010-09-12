@@ -116,8 +116,10 @@ class FilteringTests(unittest.TestCase): # {{{1
     def test_where(self):
         e1 = linqy.range(50,100).where(lambda x: not x % 10)
         e2 = linqy.range(50,100).where(lambda x, i: i < 5)
+        e3 = linqy.make([-1,0,1])
         self.assertEqual(list(e1), [50,60,70,80,90])
         self.assertEqual(list(e2), [50,51,52,53,54])
+        self.assertEqual(e3.where().tolist(), [-1,1])
 
     def test_oftype(self):
         e = linqy.make([1,'2',3,'4',5]).oftype(int)
@@ -131,8 +133,10 @@ class PartitioningTests(unittest.TestCase): # {{{1
     def test_skipwhile(self):
         e1 = linqy.make([1,2,3,4,5]).skipwhile(lambda x: x < 3)
         e2 = linqy.make([1,2,3,4,5]).skipwhile(lambda x, i: i < 3)
+        e3 = linqy.make([1,1,0,0,1]).skipwhile()
         self.assertEqual(list(e1), [3,4,5])
         self.assertEqual(list(e2), [4,5])
+        self.assertEqual(list(e3), [0,0,1])
 
     def test_take(self):
         e = linqy.make([1,2,3,4,5]).take(3)
@@ -141,8 +145,10 @@ class PartitioningTests(unittest.TestCase): # {{{1
     def test_takewhile(self):
         e1 = linqy.make([1,2,3,4,5]).takewhile(lambda x: x < 3)
         e2 = linqy.make([1,2,3,4,5]).takewhile(lambda x, i: i < 3)
+        e3 = linqy.make([1,1,0,0,1]).takewhile()
         self.assertEqual(list(e1), [1,2])
         self.assertEqual(list(e2), [1,2,3])
+        self.assertEqual(list(e3), [1,1])
 
 class OrderingTests(unittest.TestCase): # {{{1
     @classmethod
@@ -233,6 +239,22 @@ class EqualityTests(unittest.TestCase): # {{{1
         self.assertTrue(linqy.make([1,2,3]).sequenceequal(linqy.make([1,2,3])))
         self.assertFalse(linqy.make([1,2,3]).sequenceequal(linqy.make([1,2,4])))
         self.assertFalse(linqy.make([1,2,3]).sequenceequal(linqy.make([1,2])))
+
+
+class QuantifierTests(unittest.TestCase): # {{{1
+    def test_all(self):
+        self.assertTrue(linqy.make([1,2,3,4,5]).all(lambda x: x > 0))
+        self.assertTrue(linqy.make([1,2,3,4,5]).all())
+        self.assertFalse(linqy.make([1,2,3,4,5]).all(lambda x: x > 3))
+        self.assertTrue(linqy.empty().all(lambda x: x > 0))
+        self.assertTrue(linqy.empty().all())
+    
+    def test_any(self):
+        self.assertTrue(linqy.make([1,2,3,4,5]).any(lambda x: x > 3))
+        self.assertTrue(linqy.make([1,2,3,4,5]).any())
+        self.assertFalse(linqy.make([1,2,3,4,5]).any(lambda x: x > 10))
+        self.assertFalse(linqy.empty().any(lambda x: x > 3))
+        self.assertFalse(linqy.empty().any())
 
 
 class ElementTests(unittest.TestCase): # {{{1

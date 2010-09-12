@@ -29,9 +29,14 @@ def not_(func):
     return inner
 
 def always(value):
+    ''' always retrun [value] '''
     def inner(*args, **kwargs):
         return value
     return inner
+
+def identity(value):
+    ''' return identity value '''
+    return value
 
 def next(iterator, default=Undefined):
     ''' return the next item from the iterator. '''

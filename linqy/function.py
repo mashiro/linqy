@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import inspect
-from linqy.utils import Undefined
+from linqy.utils import Undefined, identity
 
 class Function(object):
+    ''' function wrapper '''
+
     def __init__(self, func):
         if isinstance(func, Function):
             self.is_none = func.is_none
@@ -14,7 +16,7 @@ class Function(object):
         else:
             if func is None or func is Undefined:
                 self.is_none = True
-                self.func = lambda x: x # identity
+                self.func = identity
             else:
                 self.is_none = False
                 self.func = func

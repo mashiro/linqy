@@ -154,7 +154,7 @@ def enumerate(iterable):
 # Filtering Operatoins {{{1
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
-def where(iterable, pred):
+def where(iterable, pred=None):
     return ifilter(Function(pred), iterable)
 
 @extensionmethod(Enumerable)
@@ -170,7 +170,7 @@ def skip(iterable, count):
 
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
-def skipwhile(iterable, pred):
+def skipwhile(iterable, pred=None):
     return itertools.dropwhile(Function(pred), iterable)
 
 @extensionmethod(Enumerable)
@@ -180,7 +180,7 @@ def take(iterable, count):
 
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
-def takewhile(iterable, pred):
+def takewhile(iterable, pred=None):
     return itertools.takewhile(Function(pred), iterable)
 
 
@@ -218,6 +218,20 @@ def sequenceequal(first, second, selector=None):
         if selector(a) != selector(b):
             return False
     return True
+
+
+# Quantifier Operations {{{1
+@extensionmethod(Enumerable)
+def all(iterable, pred=None):
+    for x in ifilterfalse(Function(pred), iterable):
+        return False
+    return True
+
+@extensionmethod(Enumerable)
+def any(iterable, pred=None):
+    for x in ifilter(Function(pred or always(True)), iterable):
+        return True
+    return False
 
 
 # Element Operations {{{1
