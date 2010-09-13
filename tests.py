@@ -234,6 +234,15 @@ class OrderingTests(unittest.TestCase): # {{{1
             r2 = linqy.make(r).reverse().tolist()
             self.assertEqual(r1, r2)
 
+
+class ConcatenationTests(unittest.TestCase): # {{{1
+    def test_concat(self):
+        cats = [{'name': 'Barley', 'age': 8}, {'name': 'Boots', 'age': 4}, {'name': 'Whiskers', 'age': 1}]
+        dogs = [{'name': 'Bounder', 'age': 3}, {'name': 'Snoopy', 'age': 14}, {'name': 'Fido', 'age': 9}]
+        query = linqy.make(cats).select(lambda cat: cat['name']).concat(linqy.make(dogs).select(lambda dog: dog['name']))
+        self.assertEqual(query.tolist(), ['Barley', 'Boots', 'Whiskers', 'Bounder', 'Snoopy', 'Fido'])
+
+
 class EqualityTests(unittest.TestCase): # {{{1
     def test_sequenceequal(self):
         self.assertTrue(linqy.make([1,2,3]).sequenceequal(linqy.make([1,2,3])))

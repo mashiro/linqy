@@ -95,6 +95,7 @@ def lazymethod(type):
 # Generation Operations {{{1
 def make(iterable):
     return asenumerable(iterable)
+from_ = make
 
 def empty():
     return make([])
@@ -207,6 +208,13 @@ def thenby_descending(ordered, key=None, reverse=False):
 @lazymethod(Enumerable)
 def reverse(iterable):
     return reversed(tosequence(iterable))
+
+
+# Concatenation Operations {{{1
+@extensionmethod(Enumerable)
+@lazymethod(Enumerable)
+def concat(iterable, *iterables):
+    return itertools.chain(iterable, *iterables)
 
 
 # Equality Operations {{{1
