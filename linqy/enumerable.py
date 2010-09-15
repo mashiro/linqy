@@ -95,7 +95,6 @@ def lazymethod(type):
 # Generation Operations {{{1
 def make(iterable):
     return asenumerable(iterable)
-from_ = make
 
 def empty():
     return make([])
