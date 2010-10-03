@@ -385,11 +385,8 @@ class ActionTests(unittest.TestCase): # {{{1
 
 
 def suite(): # {{{1
-    suite = unittest.TestSuite()
-    for v in globals().values():
-        if isinstance(v, type) and issubclass(v, unittest.TestCase):
-            suite.addTests(unittest.makeSuite(v))
-    return suite
+    module = __import__(__name__)
+    return unittest.findTestCases(module)
 
 if __name__ == '__main__': # {{{1
     unittest.main()
