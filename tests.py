@@ -355,6 +355,13 @@ class ConvertionTests(unittest.TestCase): # {{{1
         e = linqy.make([1,2,3,4,5])
         self.assertEqual(e.tolist(), [1,2,3,4,5])
 
+    def test_todict(self):
+        d = (linqy.make([1,2,3])
+                .select(lambda x, i: {'key': str(i), 'value': x})
+                .todict(lambda x: x['key'], lambda x: x['value']))
+        self.assertEqual(d, {'0': 1, '1': 2, '2': 3})
+
+
 class ActionTests(unittest.TestCase): # {{{1
     def setUp(self):
         self.num = 0

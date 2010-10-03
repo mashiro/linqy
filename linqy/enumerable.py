@@ -186,6 +186,10 @@ def takewhile(iterable, pred=None):
     return itertools.takewhile(Function(pred), iterable)
 
 
+# Join Operatoins {{{1
+
+
+
 # Ordering Operations {{{1
 @extensionmethod(Enumerable)
 def orderby(iterable, key=None, reverse=False):
@@ -300,6 +304,13 @@ def toarray(iterable, typecode):
 @extensionmethod(Enumerable)
 def tolist(iterable):
     return list(iterable)
+
+@extensionmethod(Enumerable)
+def todict(iterable, key=None, elem=None, dict=dict):
+    key = Function(key)
+    elem = Function(elem)
+    e = asenumerable(iterable)
+    return dict([kv for kv in zip(e.select(key), e.select(elem))])
 
 
 # Action Operations {{{1
