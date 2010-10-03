@@ -5,12 +5,12 @@ import itertools
 import inspect
 import types
 
-def anonymouse(**kwargs):
+def anonymous(**kwargs):
     ''' make anonymouse type instance. '''
     return type('', (object,), kwargs)()
 
 # Undefeiend value.
-Undefined = anonymouse()
+Undefined = anonymous()
 
 def wraps(wrapped):
     ''' functools.wraps for Python2.4 '''

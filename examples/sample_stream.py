@@ -22,7 +22,7 @@ def main():
     stream = sample_stream()
     statuses = (stream
             .where(lambda s: 'user' in s)
-            .select(lambda s: linqy.anonymouse(
+            .select(lambda s: linqy.anonymous(
                 name=s['user']['screen_name'],
                 text=s['text'])))
 

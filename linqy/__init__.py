@@ -23,5 +23,5 @@ from linqy.enumerable import (
         asenumerable, toarray, tolist,
         foreach, do)
 from linqy.function import Function, Not
-from linqy.utils import anonymouse
+from linqy.utils import anonymous
 
