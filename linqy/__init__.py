@@ -22,6 +22,6 @@ from linqy.enumerable import (
         elementat, first, last, single,
         asenumerable, toarray, tolist,
         foreach, do)
-from linqy.function import Function, Not
+from linqy.function import Evaluator, Function, Not
 from linqy.utils import anonymous
 

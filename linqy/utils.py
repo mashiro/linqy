@@ -59,7 +59,6 @@ def isgenerator(object):
     ''' return true if the object is a generator. '''
     return isinstance(object, types.GeneratorType)
 
-
 def isgeneratorfunction(object):
     ''' return true if the object is a user-defined generator function. '''
     CO_GENERATOR = 0x20
@@ -101,4 +100,6 @@ izip = findattr((itertools, 'izip'), (__builtins__, 'zip'))
 ifilter = findattr((itertools, 'ifilter'), (__builtins__, 'filter'))
 ifilterfalse = findattr((itertools, 'ifilterfalse'), (itertools, 'filterfalse'))
 irange = findattr((__builtins__, 'xrange'), (__builtins__, 'range'))
+basestring = findattr((__builtins__, 'basestring'), (__builtins__, 'str'))
+
 

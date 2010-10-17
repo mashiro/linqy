@@ -4,6 +4,21 @@ import unittest
 import linqy
 from array import array
 
+class EvaluatorTests(unittest.TestCase):
+    def test_calc(self):
+        f = linqy.Evaluator('1 + 1', locals(), globals())
+        self.assertEqual(f(), 2)
+
+    def test_locals(self):
+        value = 10
+        f = linqy.Evaluator('value * 2', locals(), globals())
+        self.assertEqual(f(), 20)
+
+    def test_placeholder(self):
+        f = linqy.Evaluator('_1 * _2', locals(), globals())
+        self.assertEqual(f(2, 3), 6)
+
+
 class FunctionTests(unittest.TestCase): # {{{1
     def test_identity(self):
         f = linqy.Function(None)
@@ -38,6 +53,10 @@ class FunctionTests(unittest.TestCase): # {{{1
         self.assertEqual(f.index, 0)
         self.assertTrue(f(2))
         self.assertFalse(f(1))
+
+    def test_eval(self):
+        f = linqy.Function('_1 * _2')
+        self.assertEqual(f(2, 3), 6)
 
 
 class GenerateTests(unittest.TestCase): # {{{1

@@ -6,29 +6,31 @@ from linqy.function import *
 from linqy.comparison import *
 from linqy.utils import *
 
+
 # Enumerables {{{1
 class Enumerable(object):
     ''' enumerable object '''
 
     def __init__(self, generator):
-        self._generator = generator
+        self._source = generator
 
     def __iter__(self):
-        return self._generator()
+        return self._source()
+
 
 class SequenceEnumerable(Enumerable):
     ''' sequence enumerable object '''
 
     def __init__(self, sequence):
-        self._sequence = sequence
+        Enumerable.__init__(self, sequence)
         self._index = 0
 
     def __iter__(self):
-        return SequenceEnumerable(self._sequence)
+        return SequenceEnumerable(self._source)
 
     def __next__(self):
-        if self._index < len(self._sequence):
-            result = self._sequence[self._index]
+        if self._index < len(self._source):
+            result = self._source[self._index]
             self._index += 1
             return result
         raise StopIteration
@@ -36,19 +38,20 @@ class SequenceEnumerable(Enumerable):
     next = __next__
 
     def __len__(self):
-        return self._sequence.__len__()
+        return self._source.__len__()
 
     def __getitem__(self, key):
-        return self._sequence.__getitem__(key)
+        return self._source.__getitem__(key)
 
     def __contains__(self, item):
-        return self._sequence.__contains__(item)
+        return self._source.__contains__(item)
+
 
 class OrderedEnumerable(Enumerable):
     ''' ordered enumerable object '''
 
     def __init__(self, iterable, key, reverse, parent=None):
-        self._iterable = iterable
+        Enumerable.__init__(self, iterable)
         self._key = key
         self._reverse = reverse
         self._parent = parent
@@ -62,7 +65,7 @@ class OrderedEnumerable(Enumerable):
 
         keys = [key(context) for context in self.contexts()]
         func = lambda x: tuple(imap(lambda key: key(x), keys))
-        return iter(sorted(self._iterable, key=func))
+        return iter(sorted(self._source, key=func))
 
     def contexts(self):
         results = []
@@ -73,12 +76,16 @@ class OrderedEnumerable(Enumerable):
         return reversed(results)
 
 
+
 # Decolators {{{1
 def extensionmethod(type):
     def outer(func):
         @wraps(func)
         def inner(self, *args, **kwargs):
-            return func(self, *args, **kwargs)
+            if hasattr(self, '__extensionmethod__'):
+                return self.__extensionmethod__(func, *args, **kwargs)
+            else:
+                return func(self, *args, **kwargs)
         setattr(type, func.__name__, inner)
         return func
     return outer
@@ -90,6 +97,7 @@ def lazymethod(type):
             return type(lambda: func(*args, **kwargs))
         return inner
     return outer
+
 
 
 # Generation Operations {{{1
@@ -129,7 +137,8 @@ def countup(start=0, step=1):
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
 def select(iterable, selector):
-    return imap(Function(selector), iterable)
+    selector = Function(selector)
+    return imap(selector, iterable)
 
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
@@ -157,7 +166,8 @@ def enumerate(iterable):
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
 def where(iterable, pred=None):
-    return ifilter(Function(pred), iterable)
+    pred = Function(pred)
+    return ifilter(pred, iterable)
 
 @extensionmethod(Enumerable)
 def oftype(iterable, type):
@@ -173,7 +183,8 @@ def skip(iterable, count):
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
 def skipwhile(iterable, pred=None):
-    return itertools.dropwhile(Function(pred), iterable)
+    pred = Function(pred)
+    return itertools.dropwhile(pred, iterable)
 
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
@@ -183,11 +194,11 @@ def take(iterable, count):
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
 def takewhile(iterable, pred=None):
-    return itertools.takewhile(Function(pred), iterable)
+    pred = Function(pred)
+    return itertools.takewhile(pred, iterable)
 
 
 # Join Operatoins {{{1
-
 
 
 # Ordering Operations {{{1
@@ -201,7 +212,7 @@ def orderby_descending(iterable, key=None):
 
 @extensionmethod(OrderedEnumerable)
 def thenby(ordered, key=None, reverse=False):
-    return OrderedEnumerable(ordered._iterable, key, reverse, ordered)
+    return OrderedEnumerable(ordered._source, key, reverse, ordered)
 
 @extensionmethod(OrderedEnumerable)
 def thenby_descending(ordered, key=None, reverse=False):
@@ -236,13 +247,15 @@ def sequenceequal(first, second, selector=None):
 # Quantifier Operations {{{1
 @extensionmethod(Enumerable)
 def all(iterable, pred=None):
-    for x in ifilterfalse(Function(pred), iterable):
+    pred = Function(pred)
+    for x in ifilterfalse(pred, iterable):
         return False
     return True
 
 @extensionmethod(Enumerable)
 def any(iterable, pred=None):
-    for x in ifilter(Function(pred or always(True)), iterable):
+    pred = Function(pred or always(True))
+    for x in ifilter(pred, iterable):
         return True
     return False
 
@@ -261,15 +274,18 @@ def elementat(iterable, index, default=Undefined):
 
 @extensionmethod(Enumerable)
 def first(iterable, pred=None, default=Undefined):
-    return where(iterable, Function(pred)).elementat(0, default)
+    pred = Function(pred)
+    return where(iterable, pred).elementat(0, default)
 
 @extensionmethod(Enumerable)
 def last(iterable, pred=None, default=Undefined):
+    pred = Function(pred)
     return reverse(iterable).first(pred, default)
 
 @extensionmethod(Enumerable)
 def single(iterable, pred=None, default=Undefined):
-    items = where(iterable, Function(pred)).tolist()
+    pred = Function(pred)
+    items = where(iterable, pred).tolist()
     if len(items) == 0:
         if default is Undefined:
             raise ValueError('enumerable contains no matching element')
@@ -287,14 +303,14 @@ def asenumerable(iterable):
     if isinstance(iterable, Enumerable):
         # is enumerable
         return iterable
-    elif isgenerator(iterable) or isgeneratorfunction(iterable):
-        # is generator or generator function
+    elif isgeneratorfunction(iterable):
+        # is generator function
         return Enumerable(iterable)
     elif issequence(iterable):
         # is sequence
         return SequenceEnumerable(iterable)
     else:
-        # is iterable
+        # is iterable or generator
         return Enumerable(lambda: iter(iterable))
 
 @extensionmethod(Enumerable)
