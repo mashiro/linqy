@@ -14,10 +14,10 @@ __placeholders__ = [
 class Evaluator(object):
     ''' string evaluation wrapper '''
 
-    def __init__(self, source, locals=None, globals=None):
+    def __init__(self, source, globals=None, locals=None):
         self.code = compile(source, '<string>', 'eval')
-        self.locals = (locals or {}).copy()
         self.globals = (globals or {}).copy()
+        self.locals = (locals or {}).copy()
 
     def __call__(self, *args, **kwargs):
         # setup placeholders
@@ -27,7 +27,15 @@ class Evaluator(object):
                  self.locals[placeholder] = arg
 
         # evaluation
-        return eval(self.code, self.locals, self.globals)
+        return eval(self.code, self.globals, self.locals)
+
+
+def Q(source, globals=None, locals=None):
+    if globals is None or locals is None:
+        frame = inspect.stack()[1][0]
+        globals = globals or frame.f_globals
+        locals = locals or frame.f_locals
+    return Evaluator(source, globals=globals, locals=locals)
 
 
 class Function(object):
