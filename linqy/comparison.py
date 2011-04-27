@@ -3,32 +3,27 @@
 from linqy.utils import not_
 
 class Comparison(object):
-    def __init__(self, wrapped):
-        self.wrapped = wrapped
+    def __init__(self, key):
+        self.key = key
 
     def __eq__(self, other):
-        return self.wrapped == self.wrappedvalue(other)
+        return self.key == other.key
 
     def __ne__(self, other):
-        return self.wrapped != self.wrappedvalue(other)
+        return self.key != other.key
 
     def __lt__(self, other):
-        return self.wrapped < self.wrappedvalue(other)
+        return self.key < other.key
 
     def __le__(self, other):
-        return self.wrapped <= self.wrappedvalue(other)
+        return self.key <= other.key
 
     def __gt__(self, other):
-        return self.wrapped > self.wrappedvalue(other)
+        return self.key > other.key
 
     def __ge__(self, other):
-        return self.wrapped >= self.wrappedvalue(other)
+        return self.key >= other.key
 
-    @classmethod
-    def wrappedvalue(cls, value):
-        if isinstance(value, Comparison):
-            return cls.wrappedvalue(value.wrapped)
-        return value
 
 class Reverse(Comparison):
     __lt__ = not_(Comparison.__lt__)

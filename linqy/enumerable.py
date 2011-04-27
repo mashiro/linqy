@@ -50,31 +50,13 @@ class SequenceEnumerable(Enumerable):
 class OrderedEnumerable(Enumerable):
     ''' ordered enumerable object '''
 
-    def __init__(self, iterable, key, reverse, parent=None):
+    def __init__(self, iterable, keys):
         Enumerable.__init__(self, iterable)
-        self._key = key
-        self._reverse = reverse
-        self._parent = parent
+        self._keys = keys
 
     def __iter__(self):
-        def key(context):
-            if context._reverse:
-                return lambda x: Reverse(context._key(x))
-            else:
-                return lambda x: context._key(x)
-
-        keys = [key(context) for context in self.contexts()]
-        func = lambda x: tuple(imap(lambda key: key(x), keys))
-        return iter(sorted(self._source, key=func))
-
-    def contexts(self):
-        results = []
-        context = self
-        while context is not None:
-            results.append(context)
-            context = context._parent
-        return reversed(results)
-
+        key = lambda x: list(map(lambda y: y(x), self._keys))
+        return iter(sorted(self._source, key=key))
 
 
 # Decolators {{{1
@@ -204,7 +186,12 @@ def takewhile(iterable, pred=None):
 # Ordering Operations {{{1
 @extensionmethod(Enumerable)
 def orderby(iterable, key=None, reverse=False):
-    return OrderedEnumerable(iterable, key, reverse)
+    if key is None:
+        key = identity
+    _key = key
+    if reverse:
+        _key = lambda x: Reverse(key(x))
+    return OrderedEnumerable(iterable, (_key,))
 
 @extensionmethod(Enumerable)
 def orderby_descending(iterable, key=None):
@@ -212,7 +199,12 @@ def orderby_descending(iterable, key=None):
 
 @extensionmethod(OrderedEnumerable)
 def thenby(ordered, key=None, reverse=False):
-    return OrderedEnumerable(ordered._source, key, reverse, ordered)
+    if key is None:
+        key = identity
+    _key = key
+    if reverse:
+        _key = lambda x: Reverse(key(x))
+    return OrderedEnumerable(ordered, ordered._keys + (_key,))
 
 @extensionmethod(OrderedEnumerable)
 def thenby_descending(ordered, key=None, reverse=False):
