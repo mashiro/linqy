@@ -4,7 +4,7 @@ import unittest
 import linqy
 from array import array
 
-class EvaluatorTests(unittest.TestCase):
+class EvaluatorTests(unittest.TestCase): # {{{1
     def test_calc(self):
         f = linqy.Evaluator('1 + 1', locals(), globals())
         self.assertEqual(f(), 2)
@@ -46,13 +46,6 @@ class FunctionTests(unittest.TestCase): # {{{1
         self.assertEqual(f.index, 0)
         self.assertEqual(f(2,3), 6)
         self.assertEqual(f.index, 1)
-
-    def test_not(self):
-        f = linqy.Not(linqy.Function(lambda x, i: x == 1))
-        self.assertEqual(f.arity, 2)
-        self.assertEqual(f.index, 0)
-        self.assertTrue(f(2))
-        self.assertFalse(f(1))
 
     def test_eval(self):
         f = linqy.Function('_1 * _2')
@@ -408,6 +401,18 @@ class ActionTests(unittest.TestCase): # {{{1
 
         linqy.make([1,2,3]).foreach(self.addi)
         self.assertEqual(self.num, 12)
+
+
+class ExtendTest(unittest.TestCase): # {{{1
+    def test_extend(self):
+        class Foo(object):
+            def __iter__(self):
+                return iter([1,2,3])
+
+        linqy.extend(Foo)
+        f = Foo()
+        e1 = f.select(lambda x: x * 2)
+        self.assertEqual(list(e1), [2,4,6])
 
 
 def suite(): # {{{1

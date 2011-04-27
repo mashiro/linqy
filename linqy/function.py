@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import inspect
-from linqy.utils import Undefined, identity, basestring
+from linqy import compatible
+from linqy.undefined import Undefined, isundefined
+from linqy.utils import *
 
 __placeholders__ = [
     ['_1', '_'],
@@ -30,14 +32,6 @@ class Evaluator(object):
         return eval(self.code, self.globals, self.locals)
 
 
-def Q(source, globals=None, locals=None):
-    if globals is None or locals is None:
-        frame = inspect.stack()[1][0]
-        globals = globals or frame.f_globals
-        locals = locals or frame.f_locals
-    return Evaluator(source, globals=globals, locals=locals)
-
-
 class Function(object):
     ''' function wrapper '''
 
@@ -48,14 +42,14 @@ class Function(object):
             self.index = 0
             self.spec = func.spec
             self.arity = func.arity
-        elif isinstance(func, basestring):
+        elif isinstance(func, compatible.basestring):
             self.is_none = False
             self.func = Evaluator(func)
             self.index = 0
             self.spec = None
             self.arity = len(__placeholders__)
         else:
-            if func is None or func is Undefined:
+            if func is None or isundefined(func):
                 self.is_none = True
                 self.func = identity
             else:
@@ -82,8 +76,11 @@ class Function(object):
         self.index += 1
         return self.func(*args[:self.arity], **kwargs)
 
-class Not(Function):
-    def __call__(self, *args, **kwargs):
-        return not Function.__call__(self, *args, **kwargs)
 
+def Q(source, globals=None, locals=None):
+    if globals is None or locals is None:
+        frame = inspect.stack()[1][0]
+        globals = globals or frame.f_globals
+        locals = locals or frame.f_locals
+    return Evaluator(source, globals=globals, locals=locals)
 
