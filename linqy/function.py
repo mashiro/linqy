@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import inspect
 from linqy import compatible
-from linqy.undefined import Undefined, isundefined
+from linqy.undefined import _undefined
 from linqy.utils import *
 
 __placeholders__ = [
@@ -49,7 +49,7 @@ class Function(object):
             self.spec = None
             self.arity = len(__placeholders__)
         else:
-            if func is None or isundefined(func):
+            if func is None or func is _undefined:
                 self.is_none = True
                 self.func = identity
             else:

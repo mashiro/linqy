@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from linqy.undefined import Undefined, isundefined
+from linqy.undefined import _undefined
 
 class AttributeNotFoundError(Exception):
     pass
@@ -32,7 +32,7 @@ ifilterfalse = _findattr(('itertools', 'ifilterfalse'), ('itertools', 'filterfal
 irange = _findattr((__builtins__, 'xrange'), (__builtins__, 'range'))
 basestring = _findattr((__builtins__, 'basestring'), (__builtins__, 'str'))
 
-def next(iterator, default=Undefined()):
+def next(iterator, default=_undefined):
     ''' return the next item from the iterator. '''
     iterate = getattr(iterator, 'next', None)
     if iterate is None:
@@ -40,7 +40,7 @@ def next(iterator, default=Undefined()):
         if iterate is None:
             name = type(iterator).__name__
             raise TypeError('%s object is not an iterator' % name)
-    if isundefined(default):
+    if default is _undefined:
         return iterate()
     else:
         try:

@@ -8,7 +8,7 @@ from linqy.enumerable import Enumerable, SequenceEnumerable, OrderedEnumerable
 from linqy.comparison import Comparison, Reverse
 from linqy.decorators import extensionmethod, lazymethod
 from linqy.function import Evaluator, Function
-from linqy.undefined import Undefined, isundefined
+from linqy.undefined import _undefined
 
 # Generation Operations {{{1
 def make(iterable):
@@ -186,28 +186,28 @@ def contain(iterable, value):
 
 # Element Operations {{{1
 @extensionmethod(Enumerable)
-def elementat(iterable, index, default=Undefined()):
+def elementat(iterable, index, default=_undefined):
     try:
         return compatible.next(iter(skip(iterable, index)), default)
     except StopIteration:
         raise IndexError('enuemrable index out of range')
 
 @extensionmethod(Enumerable)
-def first(iterable, pred=None, default=Undefined()):
+def first(iterable, pred=None, default=_undefined):
     pred = Function(pred)
     return where(iterable, pred).elementat(0, default)
 
 @extensionmethod(Enumerable)
-def last(iterable, pred=None, default=Undefined()):
+def last(iterable, pred=None, default=_undefined):
     pred = Function(pred)
     return reverse(iterable).first(pred, default)
 
 @extensionmethod(Enumerable)
-def single(iterable, pred=None, default=Undefined()):
+def single(iterable, pred=None, default=_undefined):
     pred = Function(pred)
     items = where(iterable, pred).tolist()
     if len(items) == 0:
-        if isundefined(default):
+        if default is _undefined:
             raise ValueError('enumerable contains no matching element')
         else:
             return default

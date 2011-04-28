@@ -4,6 +4,4 @@
 class Undefined(object):
     pass
 
-def isundefined(object):
-    return isinstance(object, Undefined)
-
+_undefined = Undefined()
