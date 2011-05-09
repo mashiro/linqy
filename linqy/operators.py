@@ -112,9 +112,19 @@ def takewhile(iterable, pred=None):
 
 
 # Set Operations {{{1
+@extensionmethod(Enumerable)
+@lazymethod(Enumerable)
+def distinct(iterable, key=None):
+    key = Function(key)
+    keys = set()
+    for item in iterable:
+        k = key(item)
+        if k not in keys:
+            keys.add(k)
+            yield item
 
 
-# Ordering Operations {{{1
+# Sorting Operations {{{1
 @extensionmethod(Enumerable)
 def orderby(iterable, key=None, reverse=False):
     key = Function(key)
@@ -175,8 +185,9 @@ def any(iterable, pred=None):
     return False
 
 @extensionmethod(Enumerable)
-def contain(iterable, value):
-    return value in utils.tosequence(iterable)
+def contain(iterable, value, key=None):
+    key = Function(key)
+    return key(value) in asenumerable(iterable).select(key)
 
 
 # Element Operations {{{1

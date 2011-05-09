@@ -162,6 +162,17 @@ class PartitioningTests(unittest.TestCase): # {{{1
         self.assertEqual(list(e2), [1,2,3])
         self.assertEqual(list(e3), [1,1])
 
+
+class SetTests(unittest.TestCase): # {{{1
+    def test_distinct(self):
+        e1 = linqy.make([1,2,3,2,1]).distinct()
+        e2 = linqy.make([(1,2),(2,3),(2,2),(1,4)]).distinct(lambda x: x[0])
+        e3 = linqy.make([(1,2),(2,3),(2,2),(1,4)]).distinct(lambda x: x[1])
+        self.assertEqual(list(e1), [1,2,3])
+        self.assertEqual(list(e2), [(1,2),(2,3)])
+        self.assertEqual(list(e3), [(1,2),(2,3),(1,4)])
+
+
 class SortingTests(unittest.TestCase): # {{{1
     @classmethod
     def makeseq(cls):
@@ -282,6 +293,9 @@ class QuantifierTests(unittest.TestCase): # {{{1
         self.assertTrue(linqy.make([1,2,3]).contain(2))
         self.assertTrue(linqy.make([1,2,3]).contain(3))
         self.assertFalse(linqy.make([1,2,3]).contain(4))
+        self.assertTrue(linqy.make([(1,2),(2,3)]).contain((1,2)))
+        self.assertTrue(linqy.make([(1,2),(2,3)]).contain((1,5), lambda x: x[0]))
+        self.assertFalse(linqy.make([(1,2),(2,3)]).contain((1,5), lambda x: x[1]))
 
 
 class ElementTests(unittest.TestCase): # {{{1
