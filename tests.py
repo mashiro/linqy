@@ -162,7 +162,7 @@ class PartitioningTests(unittest.TestCase): # {{{1
         self.assertEqual(list(e2), [1,2,3])
         self.assertEqual(list(e3), [1,1])
 
-class OrderingTests(unittest.TestCase): # {{{1
+class SortingTests(unittest.TestCase): # {{{1
     @classmethod
     def makeseq(cls):
         return [{'id': 1, 'name':  'apple', 'price': 100, 'num':  8},
@@ -177,10 +177,10 @@ class OrderingTests(unittest.TestCase): # {{{1
         enum = linqy.make(seq).orderby(lambda x: x['name'])
         self.assertEqual(list(enum), [a,c,b,d,e])
 
-    def test_orderby_descending(self):
+    def test_orderbydesc(self):
         seq = self.makeseq()
         a,b,c,d,e = seq
-        enum = linqy.make(seq).orderby_descending(lambda x: x['name'])
+        enum = linqy.make(seq).orderbydesc(lambda x: x['name'])
         self.assertEqual(list(enum), [b,d,e,a,c])
 
     def test_thenby(self):
@@ -190,12 +190,12 @@ class OrderingTests(unittest.TestCase): # {{{1
         self.assertEqual(list(enum), [a,c,e,b,d])
         self.assertRaises(AttributeError, lambda: linqy.range(10).thenby(lambda x: x))
 
-    def test_thenby_descending(self):
+    def test_thenbydesc(self):
         seq = self.makeseq()
         a,b,c,d,e = seq
-        enum = linqy.make(seq).orderby(lambda x: x['name']).thenby_descending(lambda x: x['price'])
+        enum = linqy.make(seq).orderby(lambda x: x['name']).thenbydesc(lambda x: x['price'])
         self.assertEqual(list(enum), [c,a,d,b,e])
-        self.assertRaises(AttributeError, lambda: linqy.range(10).thenby_descending(lambda x: x))
+        self.assertRaises(AttributeError, lambda: linqy.range(10).thenbydesc(lambda x: x))
 
     def test_orderby_thenby(self):
         seq = self.makeseq()
@@ -203,7 +203,7 @@ class OrderingTests(unittest.TestCase): # {{{1
         enum = (linqy.make(seq)
                 .orderby(lambda x: x['num'])
                 .thenby(lambda x: x['price'])
-                .thenby_descending(lambda x: x['name']))
+                .thenbydesc(lambda x: x['name']))
         self.assertEqual(list(enum), [a,d,c,e,b])
 
     def test_reverse(self):
@@ -234,7 +234,7 @@ class OrderingTests(unittest.TestCase): # {{{1
             r1 = sorted(r, key=lambda x: (x[0], -x[2], x[1]))
             r2 = (linqy.make(r)
                     .orderby(lambda x: x[0])
-                    .thenby_descending(lambda x: x[2])
+                    .thenbydesc(lambda x: x[2])
                     .thenby(lambda x: x[1])
                     .tolist())
             self.assertEqual(r1, r2)

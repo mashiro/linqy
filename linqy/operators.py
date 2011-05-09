@@ -111,31 +111,26 @@ def takewhile(iterable, pred=None):
 # Join Operatoins {{{1
 
 
+# Set Operations {{{1
+
+
 # Ordering Operations {{{1
 @extensionmethod(Enumerable)
 def orderby(iterable, key=None, reverse=False):
-    if key is None:
-        key = utils.identity
-    _key = key
-    if reverse:
-        _key = lambda x: Reverse(key(x))
-    return OrderedEnumerable(iterable, (_key,))
+    key = Function(key)
+    return OrderedEnumerable(iterable, (compatible.if_(reverse, lambda x: Reverse(key(x)), key),))
 
 @extensionmethod(Enumerable)
-def orderby_descending(iterable, key=None):
+def orderbydesc(iterable, key=None):
     return orderby(iterable, key=key, reverse=True)
 
 @extensionmethod(OrderedEnumerable)
 def thenby(ordered, key=None, reverse=False):
-    if key is None:
-        key = utils.identity
-    _key = key
-    if reverse:
-        _key = lambda x: Reverse(key(x))
-    return OrderedEnumerable(ordered, ordered._keys + (_key,))
+    key = Function(key)
+    return OrderedEnumerable(ordered, ordered._keys + (compatible.if_(reverse, lambda x: Reverse(key(x)), key),))
 
 @extensionmethod(OrderedEnumerable)
-def thenby_descending(ordered, key=None, reverse=False):
+def thenbydesc(ordered, key=None, reverse=False):
     return thenby(ordered, key=key, reverse=True)
 
 @extensionmethod(Enumerable)

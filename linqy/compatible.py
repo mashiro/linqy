@@ -32,6 +32,12 @@ ifilterfalse = _findattr(('itertools', 'ifilterfalse'), ('itertools', 'filterfal
 irange = _findattr((__builtins__, 'xrange'), (__builtins__, 'range'))
 basestring = _findattr((__builtins__, 'basestring'), (__builtins__, 'str'))
 
+def if_(cond, yes, no):
+    if cond:
+        return yes
+    else:
+        return no
+
 def next(iterator, default=Undefined()):
     ''' return the next item from the iterator. '''
     iterate = getattr(iterator, 'next', None)
