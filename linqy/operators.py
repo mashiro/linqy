@@ -11,6 +11,9 @@ from linqy.function import Evaluator, Function
 from linqy.undefined import _undefined
 
 # Generation Operations {{{1
+def from_(iterable):
+    return asenumerable(iterable)
+
 def make(iterable):
     return asenumerable(iterable)
 
@@ -43,6 +46,92 @@ def countup(start=0, step=1):
         n += step
 
 
+# Sorting Operations {{{1
+@extensionmethod(Enumerable)
+def orderby(iterable, key=None, reverse=False):
+    key = Function(key)
+    return OrderedEnumerable(iterable, (compatible.if_(reverse, lambda x: Reverse(key(x)), key),))
+
+@extensionmethod(Enumerable)
+def orderbydesc(iterable, key=None):
+    return orderby(iterable, key=key, reverse=True)
+
+@extensionmethod(OrderedEnumerable)
+def thenby(ordered, key=None, reverse=False):
+    key = Function(key)
+    return OrderedEnumerable(ordered, ordered._keys + (compatible.if_(reverse, lambda x: Reverse(key(x)), key),))
+
+@extensionmethod(OrderedEnumerable)
+def thenbydesc(ordered, key=None, reverse=False):
+    return thenby(ordered, key=key, reverse=True)
+
+@extensionmethod(Enumerable)
+@lazymethod(Enumerable)
+def reverse(iterable):
+    return reversed(utils.tosequence(iterable))
+
+
+# Set Operations {{{1
+@extensionmethod(Enumerable)
+@lazymethod(Enumerable)
+def distinct(iterable, key=None):
+    key = Function(key)
+    keys = set()
+    for item in iterable:
+        k = key(item)
+        if k not in keys:
+            keys.add(k)
+            yield item
+
+@extensionmethod(Enumerable)
+@lazymethod(Enumerable)
+def except_(first, second, key=None):
+    raise NotImplementedError()
+
+@extensionmethod(Enumerable)
+@lazymethod(Enumerable)
+def intersect(first, second, key=None):
+    raise NotImplementedError()
+
+@extensionmethod(Enumerable)
+@lazymethod(Enumerable)
+def union(first, second, key=None):
+    raise NotImplementedError()
+
+
+# Filtering Operatoins {{{1
+@extensionmethod(Enumerable)
+@lazymethod(Enumerable)
+def where(iterable, pred=None):
+    pred = Function(pred)
+    return compatible.ifilter(pred, iterable)
+
+@extensionmethod(Enumerable)
+def oftype(iterable, type):
+    return where(iterable, lambda x: isinstance(x, type))
+
+
+# Quantifier Operations {{{1
+@extensionmethod(Enumerable)
+def all(iterable, pred=None):
+    pred = Function(pred)
+    for x in compatible.ifilterfalse(pred, iterable):
+        return False
+    return True
+
+@extensionmethod(Enumerable)
+def any(iterable, pred=None):
+    pred = Function(pred or utils.always(True))
+    for x in compatible.ifilter(pred, iterable):
+        return True
+    return False
+
+@extensionmethod(Enumerable)
+def contain(iterable, value, key=None):
+    key = Function(key)
+    return key(value) in asenumerable(iterable).select(key)
+
+
 # Projection Operations {{{1
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
@@ -72,18 +161,6 @@ def enumerate(iterable):
     return countup().zip(iterable)
 
 
-# Filtering Operatoins {{{1
-@extensionmethod(Enumerable)
-@lazymethod(Enumerable)
-def where(iterable, pred=None):
-    pred = Function(pred)
-    return compatible.ifilter(pred, iterable)
-
-@extensionmethod(Enumerable)
-def oftype(iterable, type):
-    return where(iterable, lambda x: isinstance(x, type))
-
-
 # Partitioning Operations {{{1
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
@@ -109,51 +186,22 @@ def takewhile(iterable, pred=None):
 
 
 # Join Operatoins {{{1
-
-
-# Set Operations {{{1
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
-def distinct(iterable, key=None):
-    key = Function(key)
-    keys = set()
-    for item in iterable:
-        k = key(item)
-        if k not in keys:
-            keys.add(k)
-            yield item
-
-
-# Sorting Operations {{{1
-@extensionmethod(Enumerable)
-def orderby(iterable, key=None, reverse=False):
-    key = Function(key)
-    return OrderedEnumerable(iterable, (compatible.if_(reverse, lambda x: Reverse(key(x)), key),))
-
-@extensionmethod(Enumerable)
-def orderbydesc(iterable, key=None):
-    return orderby(iterable, key=key, reverse=True)
-
-@extensionmethod(OrderedEnumerable)
-def thenby(ordered, key=None, reverse=False):
-    key = Function(key)
-    return OrderedEnumerable(ordered, ordered._keys + (compatible.if_(reverse, lambda x: Reverse(key(x)), key),))
-
-@extensionmethod(OrderedEnumerable)
-def thenbydesc(ordered, key=None, reverse=False):
-    return thenby(ordered, key=key, reverse=True)
+def join(outer, inner, outerkey, innerkey, result):
+    raise NotImplementedError()
 
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
-def reverse(iterable):
-    return reversed(utils.tosequence(iterable))
+def groupjoin(outer, inner, outerkey, innerkey, resut):
+    raise NotImplementedError()
 
 
-# Concatenation Operations {{{1
+# Grouping Operations {{{1
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
-def concat(iterable, *iterables):
-    return itertools.chain(iterable, *iterables)
+def groupby(iterable, key, selector=None, result=None):
+    raise NotImplementedError()
 
 
 # Equality Operations {{{1
@@ -167,27 +215,6 @@ def sequenceequal(first, second, selector=None):
         if selector(a) != selector(b):
             return False
     return True
-
-
-# Quantifier Operations {{{1
-@extensionmethod(Enumerable)
-def all(iterable, pred=None):
-    pred = Function(pred)
-    for x in compatible.ifilterfalse(pred, iterable):
-        return False
-    return True
-
-@extensionmethod(Enumerable)
-def any(iterable, pred=None):
-    pred = Function(pred or utils.always(True))
-    for x in compatible.ifilter(pred, iterable):
-        return True
-    return False
-
-@extensionmethod(Enumerable)
-def contain(iterable, value, key=None):
-    key = Function(key)
-    return key(value) in asenumerable(iterable).select(key)
 
 
 # Element Operations {{{1
@@ -255,6 +282,39 @@ def todict(iterable, key=None, elem=None, dict=dict):
     return dict([kv for kv in zip(e.select(key), e.select(elem))])
 
 
+# Concatenation Operations {{{1
+@extensionmethod(Enumerable)
+@lazymethod(Enumerable)
+def concat(iterable, *iterables):
+    return itertools.chain(iterable, *iterables)
+
+
+# Aggregation Operations {{{1
+@extensionmethod(Enumerable)
+def aggregate(iterable, seed, func, result=None):
+    raise NotImplementedError()
+
+@extensionmethod(Enumerable)
+def average(iterable, selector=None):
+    raise NotImplementedError()
+
+@extensionmethod(Enumerable)
+def count(iterable, pred=None):
+    raise NotImplementedError()
+
+@extensionmethod(Enumerable)
+def max(iterable, selector=None):
+    raise NotImplementedError()
+
+@extensionmethod(Enumerable)
+def min(iterable, selector=None):
+    raise NotImplementedError()
+
+@extensionmethod(Enumerable)
+def sum(iterable, selector=None):
+    raise NotImplementedError()
+
+
 # Action Operations {{{1
 @extensionmethod(Enumerable)
 def foreach(iterable, action):
@@ -279,6 +339,7 @@ def extend(type, *funcs):
 
 # End {{{1
 __all__ = list(Enumerable._operators.keys()) + [
+    'from_',
     'make',
     'empty',
     'range',

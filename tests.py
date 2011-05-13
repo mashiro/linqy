@@ -53,6 +53,11 @@ class FunctionTests(unittest.TestCase): # {{{1
 
 
 class GenerateTests(unittest.TestCase): # {{{1
+    def test_from_(self):
+        e = linqy.from_([1,2,3])
+        self.assertTrue(isinstance(e, linqy.Enumerable))
+        self.assertEqual(list(e), [1,2,3])
+
     def test_make(self):
         e = linqy.make([1,2,3])
         self.assertTrue(isinstance(e, linqy.Enumerable))
@@ -100,77 +105,6 @@ class GenerateTests(unittest.TestCase): # {{{1
         self.assertEqual(list(e2), [3,4,5])
         self.assertEqual(list(e3), [3,6,9])
         self.assertEqual(list(e4), [3,0,-3])
-
-class ProjectionTests(unittest.TestCase): # {{{1
-    def test_select(self):
-        e1 = linqy.make([1,2,3]).select(lambda x: x * 2)
-        e2 = linqy.make([1,2,3]).select(lambda x, i: (i, i * x))
-        self.assertEqual(list(e1), [2,4,6])
-        self.assertEqual(list(e2), [(0,0),(1,2),(2,6)])
-
-    def test_selectmany(self):
-        e1 = linqy.make([1,2,3]).selectmany(lambda x: [x, x * 2])
-        e2 = linqy.make([1,2,3]).selectmany(lambda x, i: [(i, x), i * x])
-        e3 = linqy.make([1,2,3]).selectmany(lambda x: range(x), result=lambda x, y: y)
-        self.assertEqual(list(e1), [1,2,2,4,3,6])
-        self.assertEqual(list(e2), [(0,1),0,(1,2),2,(2,3),6])
-        self.assertEqual(list(e3), [0,0,1,0,1,2])
-
-    def test_zip(self):
-        e = linqy.make([1,2,3]).zip([4,5,6])
-        self.assertEqual(list(e), [(1,4),(2,5),(3,6)])
-
-    def test_enumerate(self):
-        e = linqy.make([1,2,3]).enumerate()
-        self.assertEqual(list(e), [(0,1),(1,2),(2,3)])
-
-class FilteringTests(unittest.TestCase): # {{{1
-    def test_where(self):
-        e1 = linqy.range(50,100).where(lambda x: not x % 10)
-        e2 = linqy.range(50,100).where(lambda x, i: i < 5)
-        e3 = linqy.make([-1,0,1])
-        self.assertEqual(list(e1), [50,60,70,80,90])
-        self.assertEqual(list(e2), [50,51,52,53,54])
-        self.assertEqual(e3.where().tolist(), [-1,1])
-
-    def test_oftype(self):
-        e = linqy.make([1,'2',3,'4',5]).oftype(int)
-        self.assertEqual(list(e), [1,3,5])
-
-class PartitioningTests(unittest.TestCase): # {{{1
-    def test_skip(self):
-        e = linqy.make([1,2,3,4,5]).skip(3)
-        self.assertEqual(list(e), [4,5])
-
-    def test_skipwhile(self):
-        e1 = linqy.make([1,2,3,4,5]).skipwhile(lambda x: x < 3)
-        e2 = linqy.make([1,2,3,4,5]).skipwhile(lambda x, i: i < 3)
-        e3 = linqy.make([1,1,0,0,1]).skipwhile()
-        self.assertEqual(list(e1), [3,4,5])
-        self.assertEqual(list(e2), [4,5])
-        self.assertEqual(list(e3), [0,0,1])
-
-    def test_take(self):
-        e = linqy.make([1,2,3,4,5]).take(3)
-        self.assertEqual(list(e), [1,2,3])
-
-    def test_takewhile(self):
-        e1 = linqy.make([1,2,3,4,5]).takewhile(lambda x: x < 3)
-        e2 = linqy.make([1,2,3,4,5]).takewhile(lambda x, i: i < 3)
-        e3 = linqy.make([1,1,0,0,1]).takewhile()
-        self.assertEqual(list(e1), [1,2])
-        self.assertEqual(list(e2), [1,2,3])
-        self.assertEqual(list(e3), [1,1])
-
-
-class SetTests(unittest.TestCase): # {{{1
-    def test_distinct(self):
-        e1 = linqy.make([1,2,3,2,1]).distinct()
-        e2 = linqy.make([(1,2),(2,3),(2,2),(1,4)]).distinct(lambda x: x[0])
-        e3 = linqy.make([(1,2),(2,3),(2,2),(1,4)]).distinct(lambda x: x[1])
-        self.assertEqual(list(e1), [1,2,3])
-        self.assertEqual(list(e2), [(1,2),(2,3)])
-        self.assertEqual(list(e3), [(1,2),(2,3),(1,4)])
 
 
 class SortingTests(unittest.TestCase): # {{{1
@@ -258,12 +192,99 @@ class SortingTests(unittest.TestCase): # {{{1
             self.assertEqual(r1, r2)
 
 
-class ConcatenationTests(unittest.TestCase): # {{{1
-    def test_concat(self):
-        cats = [{'name': 'Barley', 'age': 8}, {'name': 'Boots', 'age': 4}, {'name': 'Whiskers', 'age': 1}]
-        dogs = [{'name': 'Bounder', 'age': 3}, {'name': 'Snoopy', 'age': 14}, {'name': 'Fido', 'age': 9}]
-        query = linqy.make(cats).select(lambda cat: cat['name']).concat(linqy.make(dogs).select(lambda dog: dog['name']))
-        self.assertEqual(query.tolist(), ['Barley', 'Boots', 'Whiskers', 'Bounder', 'Snoopy', 'Fido'])
+class SetTests(unittest.TestCase): # {{{1
+    def test_distinct(self):
+        e1 = linqy.make([1,2,3,2,1]).distinct()
+        e2 = linqy.make([(1,2),(2,3),(2,2),(1,4)]).distinct(lambda x: x[0])
+        e3 = linqy.make([(1,2),(2,3),(2,2),(1,4)]).distinct(lambda x: x[1])
+        self.assertEqual(list(e1), [1,2,3])
+        self.assertEqual(list(e2), [(1,2),(2,3)])
+        self.assertEqual(list(e3), [(1,2),(2,3),(1,4)])
+
+    def test_except(self):
+        raise NotImplementedError()
+
+    def test_intersect(self):
+        raise NotImplementedError()
+
+    def test_union(self):
+        raise NotImplementedError()
+
+
+class FilteringTests(unittest.TestCase): # {{{1
+    def test_where(self):
+        e1 = linqy.range(50,100).where(lambda x: not x % 10)
+        e2 = linqy.range(50,100).where(lambda x, i: i < 5)
+        e3 = linqy.make([-1,0,1])
+        self.assertEqual(list(e1), [50,60,70,80,90])
+        self.assertEqual(list(e2), [50,51,52,53,54])
+        self.assertEqual(e3.where().tolist(), [-1,1])
+
+    def test_oftype(self):
+        e = linqy.make([1,'2',3,'4',5]).oftype(int)
+        self.assertEqual(list(e), [1,3,5])
+
+
+class QuantifierTests(unittest.TestCase): # {{{1
+    pass
+
+
+class ProjectionTests(unittest.TestCase): # {{{1
+    def test_select(self):
+        e1 = linqy.make([1,2,3]).select(lambda x: x * 2)
+        e2 = linqy.make([1,2,3]).select(lambda x, i: (i, i * x))
+        self.assertEqual(list(e1), [2,4,6])
+        self.assertEqual(list(e2), [(0,0),(1,2),(2,6)])
+
+    def test_selectmany(self):
+        e1 = linqy.make([1,2,3]).selectmany(lambda x: [x, x * 2])
+        e2 = linqy.make([1,2,3]).selectmany(lambda x, i: [(i, x), i * x])
+        e3 = linqy.make([1,2,3]).selectmany(lambda x: range(x), result=lambda x, y: y)
+        self.assertEqual(list(e1), [1,2,2,4,3,6])
+        self.assertEqual(list(e2), [(0,1),0,(1,2),2,(2,3),6])
+        self.assertEqual(list(e3), [0,0,1,0,1,2])
+
+    def test_zip(self):
+        e = linqy.make([1,2,3]).zip([4,5,6])
+        self.assertEqual(list(e), [(1,4),(2,5),(3,6)])
+
+    def test_enumerate(self):
+        e = linqy.make([1,2,3]).enumerate()
+        self.assertEqual(list(e), [(0,1),(1,2),(2,3)])
+
+
+class PartitioningTests(unittest.TestCase): # {{{1
+    def test_skip(self):
+        e = linqy.make([1,2,3,4,5]).skip(3)
+        self.assertEqual(list(e), [4,5])
+
+    def test_skipwhile(self):
+        e1 = linqy.make([1,2,3,4,5]).skipwhile(lambda x: x < 3)
+        e2 = linqy.make([1,2,3,4,5]).skipwhile(lambda x, i: i < 3)
+        e3 = linqy.make([1,1,0,0,1]).skipwhile()
+        self.assertEqual(list(e1), [3,4,5])
+        self.assertEqual(list(e2), [4,5])
+        self.assertEqual(list(e3), [0,0,1])
+
+    def test_take(self):
+        e = linqy.make([1,2,3,4,5]).take(3)
+        self.assertEqual(list(e), [1,2,3])
+
+    def test_takewhile(self):
+        e1 = linqy.make([1,2,3,4,5]).takewhile(lambda x: x < 3)
+        e2 = linqy.make([1,2,3,4,5]).takewhile(lambda x, i: i < 3)
+        e3 = linqy.make([1,1,0,0,1]).takewhile()
+        self.assertEqual(list(e1), [1,2])
+        self.assertEqual(list(e2), [1,2,3])
+        self.assertEqual(list(e3), [1,1])
+
+
+class JoinTests(unittest.TestCase): # {{{1
+    pass
+
+
+class GroupingTests(unittest.TestCase): # {{{1
+    pass
 
 
 class EqualityTests(unittest.TestCase): # {{{1
@@ -271,31 +292,6 @@ class EqualityTests(unittest.TestCase): # {{{1
         self.assertTrue(linqy.make([1,2,3]).sequenceequal(linqy.make([1,2,3])))
         self.assertFalse(linqy.make([1,2,3]).sequenceequal(linqy.make([1,2,4])))
         self.assertFalse(linqy.make([1,2,3]).sequenceequal(linqy.make([1,2])))
-
-
-class QuantifierTests(unittest.TestCase): # {{{1
-    def test_all(self):
-        self.assertTrue(linqy.make([1,2,3,4,5]).all(lambda x: x > 0))
-        self.assertTrue(linqy.make([1,2,3,4,5]).all())
-        self.assertFalse(linqy.make([1,2,3,4,5]).all(lambda x: x > 3))
-        self.assertTrue(linqy.empty().all(lambda x: x > 0))
-        self.assertTrue(linqy.empty().all())
-    
-    def test_any(self):
-        self.assertTrue(linqy.make([1,2,3,4,5]).any(lambda x: x > 3))
-        self.assertTrue(linqy.make([1,2,3,4,5]).any())
-        self.assertFalse(linqy.make([1,2,3,4,5]).any(lambda x: x > 10))
-        self.assertFalse(linqy.empty().any(lambda x: x > 3))
-        self.assertFalse(linqy.empty().any())
-
-    def test_contain(self):
-        self.assertTrue(linqy.make([1,2,3]).contain(1))
-        self.assertTrue(linqy.make([1,2,3]).contain(2))
-        self.assertTrue(linqy.make([1,2,3]).contain(3))
-        self.assertFalse(linqy.make([1,2,3]).contain(4))
-        self.assertTrue(linqy.make([(1,2),(2,3)]).contain((1,2)))
-        self.assertTrue(linqy.make([(1,2),(2,3)]).contain((1,5), lambda x: x[0]))
-        self.assertFalse(linqy.make([(1,2),(2,3)]).contain((1,5), lambda x: x[1]))
 
 
 class ElementTests(unittest.TestCase): # {{{1
@@ -386,6 +382,31 @@ class ConvertionTests(unittest.TestCase): # {{{1
                 .select(lambda x, i: {'key': str(i), 'value': x})
                 .todict(lambda x: x['key'], lambda x: x['value']))
         self.assertEqual(d, {'0': 1, '1': 2, '2': 3})
+
+
+class ConcatenationTests(unittest.TestCase): # {{{1
+    def test_concat(self):
+        cats = [{'name': 'Barley', 'age': 8}, {'name': 'Boots', 'age': 4}, {'name': 'Whiskers', 'age': 1}]
+        dogs = [{'name': 'Bounder', 'age': 3}, {'name': 'Snoopy', 'age': 14}, {'name': 'Fido', 'age': 9}]
+        query = linqy.make(cats).select(lambda cat: cat['name']).concat(linqy.make(dogs).select(lambda dog: dog['name']))
+        self.assertEqual(query.tolist(), ['Barley', 'Boots', 'Whiskers', 'Bounder', 'Snoopy', 'Fido'])
+
+
+class AggregationTests(unittest.TestCase): # {{{1
+    def test_aggregate(self):
+        raise NotImplementedError()
+
+    def test_average(self):
+        raise NotImplementedError()
+
+    def test_count(self):
+        self.assertTrue(linqy.make([4,3,5,1,2]).count(), 5)
+
+    def test_max(self):
+        self.assertTrue(linqy.make([4,3,5,1,2]).max(), 5)
+
+    def test_min(self):
+        self.assertTrue(linqy.make([4,3,5,1,2]).min(), 1)
 
 
 class ActionTests(unittest.TestCase): # {{{1
