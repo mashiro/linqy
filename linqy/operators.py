@@ -11,9 +11,6 @@ from linqy.function import Evaluator, Function
 from linqy.undefined import _undefined
 
 # Generation Operations {{{1
-def from_(iterable):
-    return asenumerable(iterable)
-
 def make(iterable):
     return asenumerable(iterable)
 
@@ -73,30 +70,51 @@ def reverse(iterable):
 
 # Set Operations {{{1
 @extensionmethod(Enumerable)
-@lazymethod(Enumerable)
 def distinct(iterable, key=None):
+    iterable = asenumerable(iterable)
     key = Function(key)
     keys = set()
-    for item in iterable:
-        k = key(item)
-        if k not in keys:
-            keys.add(k)
-            yield item
+    return (iterable
+            .select(lambda x: [key(x), x])
+            .where(lambda x: x[0] not in keys)
+            .do(lambda x: keys.add(x[0]))
+            .select(lambda x: x[1]))
 
 @extensionmethod(Enumerable)
-@lazymethod(Enumerable)
+def union(first, second, key=None, all=False):
+    iterable = concat(first, second)
+    if all:
+        return iterable
+    else:
+        return iterable.distinct(key)
+
+@extensionmethod(Enumerable)
+def unionall(first, second, key=None):
+    return union(first, second, key, True)
+
+@extensionmethod(Enumerable)
 def except_(first, second, key=None):
-    raise NotImplementedError()
+    first = asenumerable(first)
+    second = asenumerable(second)
+    key = Function(key)
+    keys = set(second.select(lambda x: key(x)))
+    return (first
+            .select(lambda x: [key(x), x])
+            .where(lambda x: x[0] not in keys)
+            .do(lambda x: keys.add(x[0]))
+            .select(lambda x: x[1]))
 
 @extensionmethod(Enumerable)
-@lazymethod(Enumerable)
 def intersect(first, second, key=None):
-    raise NotImplementedError()
-
-@extensionmethod(Enumerable)
-@lazymethod(Enumerable)
-def union(first, second, key=None):
-    raise NotImplementedError()
+    first = asenumerable(first)
+    second = asenumerable(second)
+    key = Function(key)
+    keys = set(second.select(lambda x: key(x)))
+    return (first
+            .select(lambda x: [key(x), x])
+            .where(lambda x: x[0] in keys)
+            .do(lambda x: keys.remove(x[0]))
+            .select(lambda x: x[1]))
 
 
 # Filtering Operatoins {{{1
@@ -339,7 +357,6 @@ def extend(type, *funcs):
 
 # End {{{1
 __all__ = list(Enumerable._operators.keys()) + [
-    'from_',
     'make',
     'empty',
     'range',

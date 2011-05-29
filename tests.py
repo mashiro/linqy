@@ -53,11 +53,6 @@ class FunctionTests(unittest.TestCase): # {{{1
 
 
 class GenerateTests(unittest.TestCase): # {{{1
-    def test_from_(self):
-        e = linqy.from_([1,2,3])
-        self.assertTrue(isinstance(e, linqy.Enumerable))
-        self.assertEqual(list(e), [1,2,3])
-
     def test_make(self):
         e = linqy.make([1,2,3])
         self.assertTrue(isinstance(e, linqy.Enumerable))
@@ -201,14 +196,26 @@ class SetTests(unittest.TestCase): # {{{1
         self.assertEqual(list(e2), [(1,2),(2,3)])
         self.assertEqual(list(e3), [(1,2),(2,3),(1,4)])
 
+    def test_union(self):
+        a1 = [0,0,0,1,2,2,2,3,4,4]
+        a2 = [0,1,3,4,4]
+        self.assertEqual(linqy.union(a1, a2).tolist(), [0,1,2,3,4])
+        self.assertEqual(linqy.union(a1, a2, all=True).tolist(), [0,0,0,1,2,2,2,3,4,4,0,1,3,4,4])
+
+    def test_unionall(self):
+        a1 = [0,0,0,1,2,2,2,3,4,4]
+        a2 = [0,1,3,4,4]
+        self.assertEqual(linqy.unionall(a1, a2).tolist(), [0,0,0,1,2,2,2,3,4,4,0,1,3,4,4])
+
     def test_except(self):
-        raise NotImplementedError()
+        a1 = [0,0,0,1,2,2,2,3,4,4]
+        a2 = [0,1,3,4,4]
+        self.assertEqual(linqy.except_(a1, a2).tolist(), [2])
 
     def test_intersect(self):
-        raise NotImplementedError()
-
-    def test_union(self):
-        raise NotImplementedError()
+        a1 = [0,0,0,1,2,2,2,3,4,4]
+        a2 = [0,1,3,4,4]
+        self.assertEqual(linqy.intersect(a1, a2).tolist(), [0,1,3,4])
 
 
 class FilteringTests(unittest.TestCase): # {{{1
