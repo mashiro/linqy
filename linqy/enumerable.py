@@ -13,9 +13,9 @@ class Enumerable(object):
 
     @classmethod
     def __extend__(cls, name, func):
-        if not hasattr(cls, '_operators'):
-            cls._operators = {}
-        cls._operators[name] = func
+        if not hasattr(cls, '_operations'):
+            cls._operations = {}
+        cls._operations[name] = func
         setattr(cls, name, func)
 
 

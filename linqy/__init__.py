@@ -13,5 +13,5 @@ from linqy.enumerable import Enumerable, SequenceEnumerable, OrderedEnumerable
 from linqy.function import Evaluator, Function, Q
 from linqy.decorators import extensionmethod, lazymethod
 from linqy.utils import anonymous
-from linqy.operators import *
+from linqy.operations import *
 

@@ -348,15 +348,17 @@ def do(iterable, action):
         action(item)
         yield item
 
+
 # Helpers {{{1
 def extend(type, *funcs):
     if len(funcs) == 0:
-        funcs = Enumerable._operators.values()
+        funcs = Enumerable._operations.values()
     for func in funcs:
         extensionmethod(type)(func)
 
+
 # End {{{1
-__all__ = list(Enumerable._operators.keys()) + [
+__all__ = list(Enumerable._operations.keys()) + [
     'make',
     'empty',
     'range',
@@ -365,3 +367,4 @@ __all__ = list(Enumerable._operators.keys()) + [
     'countup',
     'extend',
 ]
+
