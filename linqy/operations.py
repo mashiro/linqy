@@ -255,17 +255,19 @@ def last(iterable, pred=None, default=_undefined):
 
 @extensionmethod(Enumerable)
 def single(iterable, pred=None, default=_undefined):
-    pred = Function(pred)
-    items = where(iterable, pred).tolist()
-    if len(items) == 0:
-        if default is _undefined:
-            raise ValueError('enumerable contains no matching element')
-        else:
+    iterator = iter(where(iterable, pred))
+    try:
+        result = compatible.next(iterator)
+    except StopIteration:
+        if default is not _undefined:
             return default
-    elif len(items) == 1:
-        return items[0]
+        raise LookupError('enumerable contains no matching element')
     else:
-        raise ValueError('enumerable contains more than one element')
+        try:
+            compatible.next(iterator)
+            raise LookupError('enumerable contains more than one element')
+        except StopIteration:
+            return result
 
 
 # Converting Operations {{{1
@@ -318,19 +320,19 @@ def average(iterable, selector=None):
 
 @extensionmethod(Enumerable)
 def count(iterable, pred=None):
-    raise NotImplementedError()
+    return compatible.reduce(lambda n, _: n + 1, where(iterable, pred), 0)
 
 @extensionmethod(Enumerable)
 def max(iterable, selector=None):
-    raise NotImplementedError()
+    return compatible.max(select(iterable, selector))
 
 @extensionmethod(Enumerable)
 def min(iterable, selector=None):
-    raise NotImplementedError()
+    return compatible.min(select(iterable, selector))
 
 @extensionmethod(Enumerable)
 def sum(iterable, selector=None):
-    raise NotImplementedError()
+    return compatible.sum(select(iterable, selector))
 
 
 # Action Operations {{{1

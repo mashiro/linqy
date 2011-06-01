@@ -352,22 +352,22 @@ class ElementTests(unittest.TestCase): # {{{1
 
     def test_single(self):
         self.assertEqual(linqy.make([1]).single(), 1)
-        self.assertRaises(ValueError, lambda: linqy.empty().single())
-        self.assertRaises(ValueError, lambda: linqy.make([1,2]).single())
+        self.assertRaises(LookupError, lambda: linqy.empty().single())
+        self.assertRaises(LookupError, lambda: linqy.make([1,2]).single())
 
     def test_single_pred(self):
         self.assertEqual(linqy.range(10).single(lambda x: x == 5), 5)
-        self.assertRaises(ValueError, lambda: linqy.range(10).single(lambda x: x > 5))
-        self.assertRaises(ValueError, lambda: linqy.range(10).single(lambda x: x > 100))
+        self.assertRaises(LookupError, lambda: linqy.range(10).single(lambda x: x > 5))
+        self.assertRaises(LookupError, lambda: linqy.range(10).single(lambda x: x > 100))
 
     def test_single_default(self):
         self.assertEqual(linqy.make([1]).single(), 1)
         self.assertEqual(linqy.empty().single(default=100), 100)
-        self.assertRaises(ValueError, lambda: linqy.make([1,2]).single(default=100))
+        self.assertRaises(LookupError, lambda: linqy.make([1,2]).single(default=100))
 
     def test_single_pred_default(self):
         self.assertEqual(linqy.range(10).single(lambda x: x == 5, default=100), 5)
-        self.assertRaises(ValueError, lambda: linqy.range(10).single(lambda x: x > 5, default=100))
+        self.assertRaises(LookupError, lambda: linqy.range(10).single(lambda x: x > 5, default=100))
         self.assertEqual(linqy.range(10).single(lambda x: x > 100, default=100), 100)
 
 class ConvertionTests(unittest.TestCase): # {{{1
@@ -408,12 +408,17 @@ class AggregationTests(unittest.TestCase): # {{{1
 
     def test_count(self):
         self.assertTrue(linqy.make([4,3,5,1,2]).count(), 5)
+        self.assertTrue(linqy.make(range(100)).count(), 100)
+        self.assertTrue(linqy.make(range(100)).count(lambda x: x % 2), 50)
 
     def test_max(self):
         self.assertTrue(linqy.make([4,3,5,1,2]).max(), 5)
 
     def test_min(self):
         self.assertTrue(linqy.make([4,3,5,1,2]).min(), 1)
+
+    def test_sum(self):
+        self.assertTrue(linqy.make([1,2,3,4,5,6,7,8,9,10]).sum(), 55)
 
 
 class ActionTests(unittest.TestCase): # {{{1

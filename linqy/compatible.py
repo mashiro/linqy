@@ -31,6 +31,10 @@ ifilter = _findattr(('itertools', 'ifilter'), (__builtins__, 'filter'))
 ifilterfalse = _findattr(('itertools', 'ifilterfalse'), ('itertools', 'filterfalse'))
 irange = _findattr((__builtins__, 'xrange'), (__builtins__, 'range'))
 basestring = _findattr((__builtins__, 'basestring'), (__builtins__, 'str'))
+min = _findattr((__builtins__, 'min'))
+max = _findattr((__builtins__, 'max'))
+sum = _findattr((__builtins__, 'sum'))
+reduce = _findattr((__builtins__, 'reduce'), ('functools', 'reduce'))
 
 def if_(cond, yes, no):
     if cond:
@@ -53,6 +57,20 @@ def next(iterator, default=_undefined):
             return iterate()
         except StopIteration:
             return default
+
+izip_longest = _findattr(('itertools', 'izip_longest'), ('itertools', 'zip_longest'), None)
+if izip_longest is None:
+    import itertools
+    def izip_longest(fillvalue=_undefined, *args):
+        def sentinel(counter = ([fillvalue]*(len(args)-1)).pop):
+            yield counter() # yields the fillvalue, or raises IndexError
+        fillers = itertools.repeat(fillvalue)
+        iterators = [itertools.chain(iterator, sentinel(), fillers) for iterator in args]
+        try:
+            for tup in izip(*iters):
+                yield tup
+        except IndexError:
+            pass
 
 wraps = _findattr(('functools', 'wraps'), None)
 if wraps is None:
