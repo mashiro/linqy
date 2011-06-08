@@ -424,6 +424,7 @@ class AggregationTests(unittest.TestCase): # {{{1
         self.assertEqual(linqy.make(range(1,11)).aggregate(lambda a, b: a + b, seed=100), 155)
 
     def test_average(self):
+        self.assertEqual(linqy.make([1,1,1,1,1]).average(), 1)
         self.assertEqual(linqy.make([1,2,3,4,5]).average(), 3)
 
     def test_count(self):
