@@ -36,12 +36,6 @@ max = _findattr((__builtins__, 'max'))
 sum = _findattr((__builtins__, 'sum'))
 reduce = _findattr((__builtins__, 'reduce'), ('functools', 'reduce'))
 
-def if_(cond, yes, no):
-    if cond:
-        return yes
-    else:
-        return no
-
 def next(iterator, default=_undefined):
     ''' return the next item from the iterator. '''
     iterate = getattr(iterator, 'next', None)

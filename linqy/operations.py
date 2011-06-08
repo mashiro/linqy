@@ -47,7 +47,11 @@ def countup(start=0, step=1):
 @extensionmethod(Enumerable)
 def orderby(iterable, key=None, reverse=False):
     key = Function(key)
-    return OrderedEnumerable(iterable, (compatible.if_(reverse, lambda x: Reverse(key(x)), key),))
+    if reverse:
+        _key = lambda x: Reverse(key(x))
+    else:
+        _key = key
+    return OrderedEnumerable(iterable, (_key,))
 
 @extensionmethod(Enumerable)
 def orderbydesc(iterable, key=None):
@@ -56,7 +60,11 @@ def orderbydesc(iterable, key=None):
 @extensionmethod(OrderedEnumerable)
 def thenby(ordered, key=None, reverse=False):
     key = Function(key)
-    return OrderedEnumerable(ordered, ordered._keys + (compatible.if_(reverse, lambda x: Reverse(key(x)), key),))
+    if reverse:
+        _key = lambda x: Reverse(key(x))
+    else:
+        _key = key
+    return OrderedEnumerable(ordered, ordered._keys + (_key,))
 
 @extensionmethod(OrderedEnumerable)
 def thenbydesc(ordered, key=None, reverse=False):
@@ -322,7 +330,8 @@ def aggregate(iterable, func, selector=None, seed=_undefined):
 
 @extensionmethod(Enumerable)
 def average(iterable, selector=None):
-    raise NotImplementedError()
+    seq = asenumerable(list(iterable))
+    return seq.sum(selector) / seq.count()
 
 @extensionmethod(Enumerable)
 def count(iterable, pred=None):
