@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from linqy import compatible
 
 # Enumerables {{{1
 class Enumerable(object):
@@ -25,17 +26,13 @@ class SequenceEnumerable(Enumerable):
 
     def __init__(self, sequence):
         Enumerable.__init__(self, sequence)
-        self._index = 0
+        self._iter = iter(sequence)
 
     def __iter__(self):
         return SequenceEnumerable(self._source)
 
     def __next__(self):
-        if self._index < len(self._source):
-            result = self._source[self._index]
-            self._index += 1
-            return result
-        raise StopIteration
+        return compatible.next(self._iter)
 
     next = __next__
 
