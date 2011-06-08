@@ -132,22 +132,23 @@ def oftype(iterable, type):
 # Quantifier Operations {{{1
 @extensionmethod(Enumerable)
 def all(iterable, pred=None):
-    pred = Function(pred or utils.always(True))
+    pred = Function(pred)
     for x in compatible.ifilterfalse(pred, iterable):
         return False
     return True
 
 @extensionmethod(Enumerable)
 def any(iterable, pred=None):
-    pred = Function(pred or utils.always(True))
+    pred = Function(pred)
     for x in compatible.ifilter(pred, iterable):
         return True
     return False
 
 @extensionmethod(Enumerable)
-def contain(iterable, value, key=None):
-    key = Function(key)
-    return key(value) in asenumerable(iterable).select(key)
+def contains(iterable, value, key=None):
+    for x in select(iterable, key).where(lambda x: x == value):
+        return True
+    return False
 
 
 # Projection Operations {{{1

@@ -232,7 +232,30 @@ class FilteringTests(unittest.TestCase): # {{{1
 
 
 class QuantifierTests(unittest.TestCase): # {{{1
-    pass
+    def test_all(self):
+        self.assertTrue(linqy.make([1,2,3,4,5]).all())
+        self.assertFalse(linqy.make([0,1,2,3,4,5]).all())
+        self.assertTrue(linqy.make([1,2,3,4,5]).all(lambda x: x < 10))
+        self.assertTrue(linqy.make([0,1,2,3,4,5]).all(lambda x: x < 10))
+
+    def test_any(self):
+        self.assertTrue(linqy.make([1,2,3,4,5]).any())
+        self.assertTrue(linqy.make([0,1,2,3,4,5]).any())
+        self.assertFalse(linqy.make([0,0,0,0]).any())
+        self.assertTrue(linqy.make([1,2,3,4,5]).any(lambda x: x < 10))
+        self.assertTrue(linqy.make([0,1,2,3,4,5]).any(lambda x: x < 10))
+        self.assertFalse(linqy.make([0,1,2,3,4,5]).any(lambda x: x > 10))
+
+    def test_contains(self):
+        self.assertTrue(linqy.make([1,2,3,4,5]).contains(2))
+        self.assertFalse(linqy.make([1,2,3,4,5]).contains(8))
+        self.assertTrue(linqy.make([(1,2),(2,3),(3,4)]).contains((2,3)))
+        self.assertFalse(linqy.make([(1,2),(2,3),(3,4)]).contains(6))
+        self.assertFalse(linqy.make([(1,2),(2,3),(3,4)]).contains((5,6)))
+        self.assertTrue(linqy.make([(1,2),(2,3),(3,4)]).contains(1, lambda x: x[0]))
+        self.assertFalse(linqy.make([(1,2),(2,3),(3,4)]).contains(8, lambda x: x[0]))
+        self.assertFalse(linqy.make([(1,2),(2,3),(3,4)]).contains(1, lambda x: x[1]))
+        self.assertTrue(linqy.make([(1,2),(2,3),(3,4)]).contains(2, lambda x: x[1]))
 
 
 class ProjectionTests(unittest.TestCase): # {{{1
