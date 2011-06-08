@@ -3,7 +3,7 @@
 import inspect
 from linqy import compatible
 from linqy.undefined import _undefined
-from linqy.utils import *
+from linqy import utils
 
 __placeholders__ = [
     ['_1', '_'],
@@ -36,26 +36,24 @@ class Function(object):
     ''' function wrapper '''
 
     def __init__(self, func):
+        self.index = 0
         if isinstance(func, Function):
             self.is_none = func.is_none
             self.func = func
-            self.index = 0
             self.spec = func.spec
             self.arity = func.arity
         elif isinstance(func, compatible.basestring):
             self.is_none = False
             self.func = Evaluator(func)
-            self.index = 0
             self.spec = None
             self.arity = len(__placeholders__)
         else:
             if func is None or func is _undefined:
                 self.is_none = True
-                self.func = identity
+                self.func = utils.identity
             else:
                 self.is_none = False
                 self.func = func
-            self.index = 0
             self.spec = inspect.getargspec(self.func)
             self.arity = len(self.spec[0])
             if inspect.ismethod(self.func):

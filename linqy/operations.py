@@ -163,7 +163,7 @@ def select(iterable, selector):
 def selectmany(iterable, selector, result=None):
     selector = Function(selector)
     result = Function(result)
-    for x in asenumerable(iterable):
+    for x in iterable:
         for y in selector(x):
             if result:
                 yield result(x, y)
