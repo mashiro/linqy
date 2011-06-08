@@ -120,7 +120,7 @@ def intersect(first, second, key=None):
 # Filtering Operatoins {{{1
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
-def where(iterable, pred=None):
+def where(iterable, pred):
     pred = Function(pred)
     return compatible.ifilter(pred, iterable)
 
@@ -132,7 +132,7 @@ def oftype(iterable, type):
 # Quantifier Operations {{{1
 @extensionmethod(Enumerable)
 def all(iterable, pred=None):
-    pred = Function(pred)
+    pred = Function(pred or utils.always(True))
     for x in compatible.ifilterfalse(pred, iterable):
         return False
     return True
@@ -187,8 +187,8 @@ def skip(iterable, count):
 
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
-def skipwhile(iterable, pred=None):
-    pred = Function(pred)
+def skipwhile(iterable, pred):
+    pred = Function(pred or utils.always(True))
     return itertools.dropwhile(pred, iterable)
 
 @extensionmethod(Enumerable)
@@ -198,8 +198,8 @@ def take(iterable, count):
 
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
-def takewhile(iterable, pred=None):
-    pred = Function(pred)
+def takewhile(iterable, pred):
+    pred = Function(pred or utils.always(True))
     return itertools.takewhile(pred, iterable)
 
 
@@ -245,12 +245,12 @@ def elementat(iterable, index, default=_undefined):
 
 @extensionmethod(Enumerable)
 def first(iterable, pred=None, default=_undefined):
-    pred = Function(pred)
+    pred = Function(pred or utils.always(True))
     return where(iterable, pred).elementat(0, default)
 
 @extensionmethod(Enumerable)
 def last(iterable, pred=None, default=_undefined):
-    pred = Function(pred)
+    pred = Function(pred or utils.always(True))
     return reverse(iterable).first(pred, default)
 
 @extensionmethod(Enumerable)
@@ -311,8 +311,13 @@ def concat(iterable, *iterables):
 
 # Aggregation Operations {{{1
 @extensionmethod(Enumerable)
-def aggregate(iterable, seed, func, result=None):
-    raise NotImplementedError()
+def aggregate(iterable, func, selector=None, seed=_undefined):
+    func = Function(func)
+    selector = Function(selector)
+    if seed is _undefined:
+        return selector(compatible.reduce(func, iterable))
+    else:
+        return selector(compatible.reduce(func, iterable, seed))
 
 @extensionmethod(Enumerable)
 def average(iterable, selector=None):
@@ -320,6 +325,7 @@ def average(iterable, selector=None):
 
 @extensionmethod(Enumerable)
 def count(iterable, pred=None):
+    pred = Function(pred or utils.always(True))
     return compatible.reduce(lambda n, _: n + 1, where(iterable, pred), 0)
 
 @extensionmethod(Enumerable)

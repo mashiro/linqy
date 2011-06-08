@@ -225,7 +225,6 @@ class FilteringTests(unittest.TestCase): # {{{1
         e3 = linqy.make([-1,0,1])
         self.assertEqual(list(e1), [50,60,70,80,90])
         self.assertEqual(list(e2), [50,51,52,53,54])
-        self.assertEqual(e3.where().tolist(), [-1,1])
 
     def test_oftype(self):
         e = linqy.make([1,'2',3,'4',5]).oftype(int)
@@ -268,10 +267,8 @@ class PartitioningTests(unittest.TestCase): # {{{1
     def test_skipwhile(self):
         e1 = linqy.make([1,2,3,4,5]).skipwhile(lambda x: x < 3)
         e2 = linqy.make([1,2,3,4,5]).skipwhile(lambda x, i: i < 3)
-        e3 = linqy.make([1,1,0,0,1]).skipwhile()
         self.assertEqual(list(e1), [3,4,5])
         self.assertEqual(list(e2), [4,5])
-        self.assertEqual(list(e3), [0,0,1])
 
     def test_take(self):
         e = linqy.make([1,2,3,4,5]).take(3)
@@ -280,10 +277,8 @@ class PartitioningTests(unittest.TestCase): # {{{1
     def test_takewhile(self):
         e1 = linqy.make([1,2,3,4,5]).takewhile(lambda x: x < 3)
         e2 = linqy.make([1,2,3,4,5]).takewhile(lambda x, i: i < 3)
-        e3 = linqy.make([1,1,0,0,1]).takewhile()
         self.assertEqual(list(e1), [1,2])
         self.assertEqual(list(e2), [1,2,3])
-        self.assertEqual(list(e3), [1,1])
 
 
 class JoinTests(unittest.TestCase): # {{{1
@@ -370,6 +365,7 @@ class ElementTests(unittest.TestCase): # {{{1
         self.assertRaises(LookupError, lambda: linqy.range(10).single(lambda x: x > 5, default=100))
         self.assertEqual(linqy.range(10).single(lambda x: x > 100, default=100), 100)
 
+
 class ConvertionTests(unittest.TestCase): # {{{1
     def test_asenumerable(self):
         self.assertTrue(isinstance(linqy.asenumerable([1,2,3]), linqy.SequenceEnumerable))
@@ -401,24 +397,25 @@ class ConcatenationTests(unittest.TestCase): # {{{1
 
 class AggregationTests(unittest.TestCase): # {{{1
     def test_aggregate(self):
-        raise NotImplementedError()
+        self.assertEqual(linqy.make(range(1,11)).aggregate(lambda a, b: a + b), 55)
+        self.assertEqual(linqy.make(range(1,11)).aggregate(lambda a, b: a + b, seed=100), 155)
 
     def test_average(self):
         raise NotImplementedError()
 
     def test_count(self):
-        self.assertTrue(linqy.make([4,3,5,1,2]).count(), 5)
-        self.assertTrue(linqy.make(range(100)).count(), 100)
-        self.assertTrue(linqy.make(range(100)).count(lambda x: x % 2), 50)
+        self.assertEqual(linqy.make([4,3,5,1,2]).count(), 5)
+        self.assertEqual(linqy.make(range(1,101)).count(), 100)
+        self.assertEqual(linqy.make(range(1,101)).count(lambda x: x % 2), 50)
 
     def test_max(self):
-        self.assertTrue(linqy.make([4,3,5,1,2]).max(), 5)
+        self.assertEqual(linqy.make([4,3,5,1,2]).max(), 5)
 
     def test_min(self):
-        self.assertTrue(linqy.make([4,3,5,1,2]).min(), 1)
+        self.assertEqual(linqy.make([4,3,5,1,2]).min(), 1)
 
     def test_sum(self):
-        self.assertTrue(linqy.make([1,2,3,4,5,6,7,8,9,10]).sum(), 55)
+        self.assertEqual(linqy.make([1,2,3,4,5,6,7,8,9,10]).sum(), 55)
 
 
 class ActionTests(unittest.TestCase): # {{{1
