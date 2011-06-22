@@ -64,23 +64,26 @@ class GenerateTests(unittest.TestCase): # {{{1
         self.assertEqual(list(e), [])
 
     def test_range(self):
-        e1 = linqy.range(3)
-        e2 = linqy.range(3, 6)
-        e3 = linqy.range(1, 6, 2)
-        self.assertTrue(isinstance(e1, linqy.Enumerable))
-        self.assertTrue(isinstance(e2, linqy.Enumerable))
-        self.assertTrue(isinstance(e3, linqy.Enumerable))
-        self.assertEqual(list(e1), [0,1,2])
-        self.assertEqual(list(e2), [3,4,5])
-        self.assertEqual(list(e3), [1,3,5])
+        e = linqy.range(3)
+        self.assertTrue(isinstance(e, linqy.Enumerable))
+        self.assertEqual(list(e), [0,1,2])
+
+        e = linqy.range(3, 6)
+        self.assertTrue(isinstance(e, linqy.Enumerable))
+        self.assertEqual(list(e), [3,4,5])
+
+        e = linqy.range(1, 6, 2)
+        self.assertTrue(isinstance(e, linqy.Enumerable))
+        self.assertEqual(list(e), [1,3,5])
 
     def test_repeat(self):
-        e1 = linqy.repeat(1, 3)
-        e2 = linqy.repeat(1).take(3)
-        self.assertTrue(isinstance(e1, linqy.Enumerable))
-        self.assertTrue(isinstance(e2, linqy.Enumerable))
-        self.assertEqual(list(e1), [1,1,1])
-        self.assertEqual(list(e2), [1,1,1])
+        e = linqy.repeat(1, 3)
+        self.assertTrue(isinstance(e, linqy.Enumerable))
+        self.assertEqual(list(e), [1,1,1])
+
+        e = linqy.repeat(1).take(3)
+        self.assertTrue(isinstance(e, linqy.Enumerable))
+        self.assertEqual(list(e), [1,1,1])
 
     def test_cycle(self):
         e = linqy.cycle([1,2,3]).take(10)
@@ -88,57 +91,64 @@ class GenerateTests(unittest.TestCase): # {{{1
         self.assertEqual(list(e), [1,2,3,1,2,3,1,2,3,1])
 
     def test_countup(self):
-        e1 = linqy.countup().take(3)
-        e2 = linqy.countup(3).take(3)
-        e3 = linqy.countup(3,3).take(3)
-        e4 = linqy.countup(3,-3).take(3)
-        self.assertTrue(isinstance(e1, linqy.Enumerable))
-        self.assertTrue(isinstance(e2, linqy.Enumerable))
-        self.assertTrue(isinstance(e3, linqy.Enumerable))
-        self.assertTrue(isinstance(e4, linqy.Enumerable))
-        self.assertEqual(list(e1), [0,1,2])
-        self.assertEqual(list(e2), [3,4,5])
-        self.assertEqual(list(e3), [3,6,9])
-        self.assertEqual(list(e4), [3,0,-3])
+        e = linqy.countup().take(3)
+        self.assertTrue(isinstance(e, linqy.Enumerable))
+        self.assertEqual(list(e), [0,1,2])
+
+        e = linqy.countup(3).take(3)
+        self.assertTrue(isinstance(e, linqy.Enumerable))
+        self.assertEqual(list(e), [3,4,5])
+
+        e = linqy.countup(3,3).take(3)
+        self.assertTrue(isinstance(e, linqy.Enumerable))
+        self.assertEqual(list(e), [3,6,9])
+
+        e = linqy.countup(3,-3).take(3)
+        self.assertTrue(isinstance(e, linqy.Enumerable))
+        self.assertEqual(list(e), [3,0,-3])
 
 
 class SortingTests(unittest.TestCase): # {{{1
     @classmethod
-    def makeseq(cls):
+    def make_data(cls):
         return [{'id': 1, 'name':  'apple', 'price': 100, 'num':  8},
                 {'id': 2, 'name': 'orange', 'price': 100, 'num': 10},
                 {'id': 3, 'name':  'apple', 'price': 120, 'num':  8},
                 {'id': 4, 'name': 'orange', 'price': 120, 'num':  8},
                 {'id': 5, 'name': 'orange', 'price':  80, 'num': 10}]
 
+    def make_random_range(self, min=0, max=10, col=5, row=100):
+        from random import randint
+        return [tuple(map(lambda x: randint(min, max), range(col))) for i in range(row)]
+
     def test_orderby(self):
-        seq = self.makeseq()
+        seq = self.make_data()
         a,b,c,d,e = seq
         enum = linqy.make(seq).orderby(lambda x: x['name'])
         self.assertEqual(list(enum), [a,c,b,d,e])
 
     def test_orderbydesc(self):
-        seq = self.makeseq()
+        seq = self.make_data()
         a,b,c,d,e = seq
         enum = linqy.make(seq).orderbydesc(lambda x: x['name'])
         self.assertEqual(list(enum), [b,d,e,a,c])
 
     def test_thenby(self):
-        seq = self.makeseq()
+        seq = self.make_data()
         a,b,c,d,e = seq
         enum = linqy.make(seq).orderby(lambda x: x['name']).thenby(lambda x: x['price'])
         self.assertEqual(list(enum), [a,c,e,b,d])
         self.assertRaises(AttributeError, lambda: linqy.range(10).thenby(lambda x: x))
 
     def test_thenbydesc(self):
-        seq = self.makeseq()
+        seq = self.make_data()
         a,b,c,d,e = seq
         enum = linqy.make(seq).orderby(lambda x: x['name']).thenbydesc(lambda x: x['price'])
         self.assertEqual(list(enum), [c,a,d,b,e])
         self.assertRaises(AttributeError, lambda: linqy.range(10).thenbydesc(lambda x: x))
 
     def test_orderby_thenby(self):
-        seq = self.makeseq()
+        seq = self.make_data()
         a,b,c,d,e = seq
         enum = (linqy.make(seq)
                 .orderby(lambda x: x['num'])
@@ -153,11 +163,7 @@ class SortingTests(unittest.TestCase): # {{{1
         e3 = e2.reverse()
         self.assertEqual(list(e1), [5,4,3,2,1])
         self.assertEqual(list(e2), [1,2,3,4,5])
-        self.assertTrue(linqy.sequenceequal(e1, e3))
-
-    def make_random_range(self, min=0, max=10, col=3, row=100):
-        from random import randint
-        return [tuple(map(lambda x: randint(min, max), range(col))) for i in range(row)]
+        self.assertEqual(list(e1), list(e3))
 
     def test_orderby_random1(self):
         for i in range(10):
@@ -189,12 +195,14 @@ class SortingTests(unittest.TestCase): # {{{1
 
 class SetTests(unittest.TestCase): # {{{1
     def test_distinct(self):
-        e1 = linqy.make([1,2,3,2,1]).distinct()
-        e2 = linqy.make([(1,2),(2,3),(2,2),(1,4)]).distinct(lambda x: x[0])
-        e3 = linqy.make([(1,2),(2,3),(2,2),(1,4)]).distinct(lambda x: x[1])
-        self.assertEqual(list(e1), [1,2,3])
-        self.assertEqual(list(e2), [(1,2),(2,3)])
-        self.assertEqual(list(e3), [(1,2),(2,3),(1,4)])
+        e = linqy.make([1,2,3,2,1]).distinct()
+        self.assertEqual(list(e), [1,2,3])
+
+        e = linqy.make([(1,2),(2,3),(2,2),(1,4)]).distinct(lambda x: x[0])
+        self.assertEqual(list(e), [(1,2),(2,3)])
+
+        e = linqy.make([(1,2),(2,3),(2,2),(1,4)]).distinct(lambda x: x[1])
+        self.assertEqual(list(e), [(1,2),(2,3),(1,4)])
 
     def test_union(self):
         a1 = [0,0,0,1,2,2,2,3,4,4]
@@ -220,23 +228,28 @@ class SetTests(unittest.TestCase): # {{{1
 
 class FilteringTests(unittest.TestCase): # {{{1
     def test_where(self):
-        e1 = linqy.range(50,100).where(lambda x: not x % 10)
-        e2 = linqy.range(50,100).where(lambda x, i: i < 5)
-        e3 = linqy.make([-1,0,1])
-        self.assertEqual(list(e1), [50,60,70,80,90])
-        self.assertEqual(list(e2), [50,51,52,53,54])
+        e = linqy.range(50,100).where(lambda x: not x % 10)
+        self.assertEqual(list(e), [50,60,70,80,90])
+
+        e = linqy.range(50,100).where(lambda x, i: i < 5)
+        self.assertEqual(list(e), [50,51,52,53,54])
 
     def test_oftype(self):
         e = linqy.make([1,'2',3,'4',5]).oftype(int)
         self.assertEqual(list(e), [1,3,5])
+
+        e = linqy.make([1,'2',3,'4',5]).oftype(float)
+        self.assertEqual(list(e), [])
 
 
 class QuantifierTests(unittest.TestCase): # {{{1
     def test_all(self):
         self.assertTrue(linqy.make([1,2,3,4,5]).all())
         self.assertFalse(linqy.make([0,1,2,3,4,5]).all())
-        self.assertTrue(linqy.make([1,2,3,4,5]).all(lambda x: x < 10))
-        self.assertTrue(linqy.make([0,1,2,3,4,5]).all(lambda x: x < 10))
+        self.assertTrue(linqy.make([1,2,3,4,5]).all(lambda x: x > 0))
+        self.assertFalse(linqy.make([1,2,3,4,5]).all(lambda x: x > 3))
+        self.assertTrue(linqy.make([0,1,2,3,4,5]).all(lambda x: x < 8))
+        self.assertFalse(linqy.make([0,1,2,3,4,5]).all(lambda x: x < 3))
 
     def test_any(self):
         self.assertTrue(linqy.make([1,2,3,4,5]).any())
@@ -247,6 +260,7 @@ class QuantifierTests(unittest.TestCase): # {{{1
         self.assertFalse(linqy.make([0,1,2,3,4,5]).any(lambda x: x > 10))
 
     def test_contains(self):
+        self.assertTrue(linqy.make([(1,2),(2,3),(3,4)]).contains((2,3)))
         self.assertTrue(linqy.make([1,2,3,4,5]).contains(2))
         self.assertFalse(linqy.make([1,2,3,4,5]).contains(8))
         self.assertTrue(linqy.make([(1,2),(2,3),(3,4)]).contains((2,3)))
@@ -260,18 +274,21 @@ class QuantifierTests(unittest.TestCase): # {{{1
 
 class ProjectionTests(unittest.TestCase): # {{{1
     def test_select(self):
-        e1 = linqy.make([1,2,3]).select(lambda x: x * 2)
-        e2 = linqy.make([1,2,3]).select(lambda x, i: (i, i * x))
-        self.assertEqual(list(e1), [2,4,6])
-        self.assertEqual(list(e2), [(0,0),(1,2),(2,6)])
+        e = linqy.make([1,2,3]).select(lambda x: x * 2)
+        self.assertEqual(list(e), [2,4,6])
+
+        e = linqy.make([1,2,3]).select(lambda x, i: (i, i * x))
+        self.assertEqual(list(e), [(0,0),(1,2),(2,6)])
 
     def test_selectmany(self):
-        e1 = linqy.make([1,2,3]).selectmany(lambda x: [x, x * 2])
-        e2 = linqy.make([1,2,3]).selectmany(lambda x, i: [(i, x), i * x])
-        e3 = linqy.make([1,2,3]).selectmany(lambda x: range(x), result=lambda x, y: y)
-        self.assertEqual(list(e1), [1,2,2,4,3,6])
-        self.assertEqual(list(e2), [(0,1),0,(1,2),2,(2,3),6])
-        self.assertEqual(list(e3), [0,0,1,0,1,2])
+        e = linqy.make([1,2,3]).selectmany(lambda x: [x, x * 2])
+        self.assertEqual(list(e), [1,2,2,4,3,6])
+
+        e = linqy.make([1,2,3]).selectmany(lambda x, i: [(i, x), i * x])
+        self.assertEqual(list(e), [(0,1),0,(1,2),2,(2,3),6])
+
+        e = linqy.make([1,2,3]).selectmany(lambda x: range(x), result=lambda x, y: y)
+        self.assertEqual(list(e), [0,0,1,0,1,2])
 
     def test_zip(self):
         e = linqy.make([1,2,3]).zip([4,5,6])
@@ -288,20 +305,22 @@ class PartitioningTests(unittest.TestCase): # {{{1
         self.assertEqual(list(e), [4,5])
 
     def test_skipwhile(self):
-        e1 = linqy.make([1,2,3,4,5]).skipwhile(lambda x: x < 3)
-        e2 = linqy.make([1,2,3,4,5]).skipwhile(lambda x, i: i < 3)
-        self.assertEqual(list(e1), [3,4,5])
-        self.assertEqual(list(e2), [4,5])
+        e = linqy.make([1,2,3,4,5]).skipwhile(lambda x: x < 3)
+        self.assertEqual(list(e), [3,4,5])
+
+        e = linqy.make([1,2,3,4,5]).skipwhile(lambda x, i: i < 3)
+        self.assertEqual(list(e), [4,5])
 
     def test_take(self):
         e = linqy.make([1,2,3,4,5]).take(3)
         self.assertEqual(list(e), [1,2,3])
 
     def test_takewhile(self):
-        e1 = linqy.make([1,2,3,4,5]).takewhile(lambda x: x < 3)
-        e2 = linqy.make([1,2,3,4,5]).takewhile(lambda x, i: i < 3)
-        self.assertEqual(list(e1), [1,2])
-        self.assertEqual(list(e2), [1,2,3])
+        e = linqy.make([1,2,3,4,5]).takewhile(lambda x: x < 3)
+        self.assertEqual(list(e), [1,2])
+
+        e = linqy.make([1,2,3,4,5]).takewhile(lambda x, i: i < 3)
+        self.assertEqual(list(e), [1,2,3])
 
 
 class JoinTests(unittest.TestCase): # {{{1
@@ -408,6 +427,12 @@ class ConvertionTests(unittest.TestCase): # {{{1
                 .select(lambda x, i: {'key': str(i), 'value': x})
                 .todict(lambda x: x['key'], lambda x: x['value']))
         self.assertEqual(d, {'0': 1, '1': 2, '2': 3})
+
+    def test_tolookup(self):
+        e = linqy.make(range(0, 10))
+        lookup = e.tolookup(lambda x: x % 2)
+        self.assertEqual(lookup[0], [0, 2, 4, 6, 8])
+        self.assertEqual(lookup[1], [1, 3, 5, 7, 9])
 
 
 class ConcatenationTests(unittest.TestCase): # {{{1

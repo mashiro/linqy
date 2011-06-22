@@ -1,10 +1,10 @@
-#!/usr/bin/env python
+#()!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import itertools
 from array import array
 from linqy import compatible
 from linqy import utils
-from linqy.enumerable import Enumerable, SequenceEnumerable, OrderedEnumerable
+from linqy.enumerable import Enumerable, SequenceEnumerable, OrderedEnumerable, List, Dict
 from linqy.comparison import Comparison, Reverse
 from linqy.decorators import extensionmethod, lazymethod
 from linqy.function import Evaluator, Function
@@ -58,17 +58,17 @@ def orderbydesc(iterable, key=None):
     return orderby(iterable, key=key, reverse=True)
 
 @extensionmethod(OrderedEnumerable)
-def thenby(ordered, key=None, reverse=False):
+def thenby(iterable, key=None, reverse=False):
     key = Function(key)
     if reverse:
         _key = lambda x: Reverse(key(x))
     else:
         _key = key
-    return OrderedEnumerable(ordered, ordered._keys + (_key,))
+    return OrderedEnumerable(iterable, iterable._keys + (_key,))
 
 @extensionmethod(OrderedEnumerable)
-def thenbydesc(ordered, key=None, reverse=False):
-    return thenby(ordered, key=key, reverse=True)
+def thenbydesc(iterable, key=None, reverse=False):
+    return thenby(iterable, key=key, reverse=True)
 
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
@@ -220,15 +220,19 @@ def join(outer, inner, outerkey, innerkey, result):
 
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
-def groupjoin(outer, inner, outerkey, innerkey, resut):
+def groupjoin(outer, inner, outerkey, innerkey, result):
     raise NotImplementedError()
 
 
 # Grouping Operations {{{1
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
-def groupby(iterable, key, selector=None, result=None):
-    raise NotImplementedError()
+def groupby(iterable, key, elem=None, result=None):
+    iterable = asenumerable(iterable)
+    key = Function(key)
+    elem = Function(elem)
+    result = Function(result)
+
 
 
 # Equality Operations {{{1
@@ -301,14 +305,25 @@ def toarray(iterable, typecode):
 
 @extensionmethod(Enumerable)
 def tolist(iterable):
-    return list(iterable)
+    return List(iterable)
 
 @extensionmethod(Enumerable)
-def todict(iterable, key=None, elem=None, dict=dict):
+def todict(iterable, key=None, elem=None):
     key = Function(key)
     elem = Function(elem)
-    e = asenumerable(iterable)
-    return dict([kv for kv in zip(e.select(key), e.select(elem))])
+    return Dict([(key(item), elem(item)) for item in iterable])
+
+@extensionmethod(Enumerable)
+def tolookup(iterable, key=None, elem=None):
+    key = Function(key)
+    elem = Function(elem)
+    lookup = Dict()
+    for item in iterable:
+        k = key(item)
+        v = elem(item)
+        group = lookup.setdefault(k, List())
+        group.append(v)
+    return lookup
 
 
 # Concatenation Operations {{{1

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from linqy import compatible
+from linqy import utils
 
 # Enumerables {{{1
 class Enumerable(object):
@@ -24,9 +25,9 @@ class Enumerable(object):
 class SequenceEnumerable(Enumerable):
     ''' sequence enumerable object '''
 
-    def __init__(self, sequence):
-        Enumerable.__init__(self, sequence)
-        self._iter = iter(sequence)
+    def __init__(self, iterable):
+        Enumerable.__init__(self, utils.tosequence(iterable))
+        self._iter = iter(self._source)
 
     def __iter__(self):
         return SequenceEnumerable(self._source)
@@ -58,4 +59,28 @@ class OrderedEnumerable(Enumerable):
         key = lambda x: list(map(lambda y: y(x), self._keys))
         return iter(sorted(self._source, key=key))
 
+
+
+class List(list, Enumerable):
+    ''' enumerable list object '''
+    pass
+
+
+class Dict(dict, Enumerable):
+    ''' enumerable dict object '''
+    pass
+
+
+## Group {{{1
+#class Group(Enumerable):
+#    def __init__(self, enumerable, key):
+#        Enumerable.__init__(self, enumerable)
+#        self.key = key
+#
+#
+## LookUp {{{1
+#class LookUp(SequenceEnumerable):
+#    def __init__(self, groups):
+#        SequenceEnumerable.__init__(self, groups)
+#
 
