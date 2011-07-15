@@ -3,8 +3,7 @@
 from linqy import compatible
 from linqy import utils
 
-# Enumerables {{{1
-class Enumerable(object):
+class Enumerable(object): # {{{1
     ''' enumerable object '''
 
     def __init__(self, generator):
@@ -21,8 +20,7 @@ class Enumerable(object):
         setattr(cls, name, func)
 
 
-# SequenceEnumerable {{{1
-class SequenceEnumerable(Enumerable):
+class SequenceEnumerable(Enumerable): # {{{1
     ''' sequence enumerable object '''
 
     def __init__(self, iterable):
@@ -47,8 +45,7 @@ class SequenceEnumerable(Enumerable):
         return self._source.__contains__(item)
 
 
-# OrderedEnumerable {{{1
-class OrderedEnumerable(Enumerable):
+class OrderedEnumerable(Enumerable): # {{{1
     ''' ordered enumerable object '''
 
     def __init__(self, iterable, keys):
@@ -59,28 +56,4 @@ class OrderedEnumerable(Enumerable):
         key = lambda x: list(map(lambda y: y(x), self._keys))
         return iter(sorted(self._source, key=key))
 
-
-
-class List(list, Enumerable):
-    ''' enumerable list object '''
-    pass
-
-
-class Dict(dict, Enumerable):
-    ''' enumerable dict object '''
-    pass
-
-
-## Group {{{1
-#class Group(Enumerable):
-#    def __init__(self, enumerable, key):
-#        Enumerable.__init__(self, enumerable)
-#        self.key = key
-#
-#
-## LookUp {{{1
-#class LookUp(SequenceEnumerable):
-#    def __init__(self, groups):
-#        SequenceEnumerable.__init__(self, groups)
-#
 

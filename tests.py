@@ -409,11 +409,6 @@ class ElementTests(unittest.TestCase): # {{{1
 
 
 class ConvertionTests(unittest.TestCase): # {{{1
-    def test_asenumerable(self):
-        self.assertTrue(isinstance(linqy.asenumerable([1,2,3]), linqy.SequenceEnumerable))
-        self.assertTrue(isinstance(linqy.asenumerable(linqy.make([1,2,3])), linqy.Enumerable))
-        self.assertFalse(isinstance(linqy.asenumerable(linqy.range(5)), linqy.SequenceEnumerable))
-
     def test_toarray(self):
         e = linqy.make([1,2,3,4,5])
         self.assertEqual(e.toarray('i'), array('i', [1,2,3,4,5]))

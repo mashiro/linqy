@@ -4,7 +4,7 @@ import itertools
 from array import array
 from linqy import compatible
 from linqy import utils
-from linqy.enumerable import Enumerable, SequenceEnumerable, OrderedEnumerable, List, Dict
+from linqy.enumerable import Enumerable, SequenceEnumerable, OrderedEnumerable
 from linqy.comparison import Comparison, Reverse
 from linqy.decorators import extensionmethod, lazymethod
 from linqy.function import Evaluator, Function
@@ -12,7 +12,18 @@ from linqy.undefined import _undefined
 
 # Generation Operations {{{1
 def make(iterable):
-    return asenumerable(iterable)
+    if isinstance(iterable, Enumerable):
+        # is enumerable
+        return iterable
+    elif utils.isgeneratorfunction(iterable):
+        # is generator function
+        return Enumerable(iterable)
+    elif utils.issequence(iterable):
+        # is sequence
+        return SequenceEnumerable(iterable)
+    else:
+        # is iterable or generator
+        return Enumerable(lambda: iter(iterable))
 
 def empty():
     return make([])
@@ -79,7 +90,7 @@ def reverse(iterable):
 # Set Operations {{{1
 @extensionmethod(Enumerable)
 def distinct(iterable, key=None):
-    iterable = asenumerable(iterable)
+    iterable = make(iterable)
     key = Function(key)
     keys = set()
     return (iterable
@@ -102,8 +113,8 @@ def unionall(first, second, key=None):
 
 @extensionmethod(Enumerable)
 def except_(first, second, key=None):
-    first = asenumerable(first)
-    second = asenumerable(second)
+    first = make(first)
+    second = make(second)
     key = Function(key)
     keys = set(second.select(lambda x: key(x)))
     return (first
@@ -114,8 +125,8 @@ def except_(first, second, key=None):
 
 @extensionmethod(Enumerable)
 def intersect(first, second, key=None):
-    first = asenumerable(first)
-    second = asenumerable(second)
+    first = make(first)
+    second = make(second)
     key = Function(key)
     keys = set(second.select(lambda x: key(x)))
     return (first
@@ -228,11 +239,9 @@ def groupjoin(outer, inner, outerkey, innerkey, result):
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
 def groupby(iterable, key, elem=None, result=None):
-    iterable = asenumerable(iterable)
-    key = Function(key)
-    elem = Function(elem)
     result = Function(result)
-
+    lookup = tolookup(iterable, key, elem)
+    return select(lookup.items(), lambda k, v: result(k, v))
 
 
 # Equality Operations {{{1
@@ -285,43 +294,28 @@ def single(iterable, pred=None, default=_undefined):
 
 # Converting Operations {{{1
 @extensionmethod(Enumerable)
-def asenumerable(iterable):
-    if isinstance(iterable, Enumerable):
-        # is enumerable
-        return iterable
-    elif utils.isgeneratorfunction(iterable):
-        # is generator function
-        return Enumerable(iterable)
-    elif utils.issequence(iterable):
-        # is sequence
-        return SequenceEnumerable(iterable)
-    else:
-        # is iterable or generator
-        return Enumerable(lambda: iter(iterable))
-
-@extensionmethod(Enumerable)
 def toarray(iterable, typecode):
     return array(typecode, iterable)
 
 @extensionmethod(Enumerable)
 def tolist(iterable):
-    return List(iterable)
+    return list(iterable)
 
 @extensionmethod(Enumerable)
 def todict(iterable, key=None, elem=None):
     key = Function(key)
     elem = Function(elem)
-    return Dict([(key(item), elem(item)) for item in iterable])
+    return dict([(key(item), elem(item)) for item in iterable])
 
 @extensionmethod(Enumerable)
 def tolookup(iterable, key=None, elem=None):
     key = Function(key)
     elem = Function(elem)
-    lookup = Dict()
+    lookup = dict()
     for item in iterable:
         k = key(item)
         v = elem(item)
-        group = lookup.setdefault(k, List())
+        group = lookup.setdefault(k, list())
         group.append(v)
     return lookup
 
@@ -345,7 +339,7 @@ def aggregate(iterable, func, selector=None, seed=_undefined):
 
 @extensionmethod(Enumerable)
 def average(iterable, selector=None):
-    seq = asenumerable(list(iterable))
+    seq = make(list(iterable))
     return seq.sum(selector) / seq.count()
 
 @extensionmethod(Enumerable)
