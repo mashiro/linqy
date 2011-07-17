@@ -329,7 +329,7 @@ def concat(iterable, *iterables):
 # Aggregation Operations {{{1
 @extensionmethod(Enumerable)
 def aggregate(iterable, func, selector=None, seed=_undefined):
-    func = Function(func, arity=1)
+    func = Function(func, arity=2)
     selector = Function(selector, arity=1)
     if seed is _undefined:
         return selector(compatible.reduce(func, iterable))
