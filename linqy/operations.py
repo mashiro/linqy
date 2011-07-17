@@ -57,7 +57,7 @@ def countup(start=0, step=1):
 # Sorting Operations {{{1
 @extensionmethod(Enumerable)
 def orderby(iterable, key=None, reverse=False):
-    key = Function(key)
+    key = Function(key, arity=1)
     if reverse:
         _key = lambda x: Reverse(key(x))
     else:
@@ -70,7 +70,7 @@ def orderbydesc(iterable, key=None):
 
 @extensionmethod(OrderedEnumerable)
 def thenby(iterable, key=None, reverse=False):
-    key = Function(key)
+    key = Function(key, arity=1)
     if reverse:
         _key = lambda x: Reverse(key(x))
     else:
@@ -91,7 +91,7 @@ def reverse(iterable):
 @extensionmethod(Enumerable)
 def distinct(iterable, key=None):
     iterable = make(iterable)
-    key = Function(key)
+    key = Function(key, arity=1)
     keys = set()
     return (iterable
             .select(lambda x: [key(x), x])
@@ -115,7 +115,7 @@ def unionall(first, second, key=None):
 def except_(first, second, key=None):
     first = make(first)
     second = make(second)
-    key = Function(key)
+    key = Function(key, arity=1)
     keys = set(second.select(lambda x: key(x)))
     return (first
             .select(lambda x: [key(x), x])
@@ -127,7 +127,7 @@ def except_(first, second, key=None):
 def intersect(first, second, key=None):
     first = make(first)
     second = make(second)
-    key = Function(key)
+    key = Function(key, arity=1)
     keys = set(second.select(lambda x: key(x)))
     return (first
             .select(lambda x: [key(x), x])
@@ -140,7 +140,7 @@ def intersect(first, second, key=None):
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
 def where(iterable, pred):
-    pred = Function(pred)
+    pred = Function(pred, arity=1)
     return compatible.ifilter(pred, iterable)
 
 @extensionmethod(Enumerable)
@@ -151,14 +151,14 @@ def oftype(iterable, type):
 # Quantifier Operations {{{1
 @extensionmethod(Enumerable)
 def all(iterable, pred=None):
-    pred = Function(pred)
+    pred = Function(pred, arity=1)
     for x in compatible.ifilterfalse(pred, iterable):
         return False
     return True
 
 @extensionmethod(Enumerable)
 def any(iterable, pred=None):
-    pred = Function(pred)
+    pred = Function(pred, arity=1)
     for x in compatible.ifilter(pred, iterable):
         return True
     return False
@@ -174,14 +174,14 @@ def contains(iterable, value, key=None):
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
 def select(iterable, selector):
-    selector = Function(selector)
+    selector = Function(selector, arity=1)
     return compatible.imap(selector, iterable)
 
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
 def selectmany(iterable, selector, result=None):
-    selector = Function(selector)
-    result = Function(result)
+    selector = Function(selector, arity=1)
+    result = Function(result, arity=2)
     for x in iterable:
         for y in selector(x):
             if result:
@@ -208,7 +208,7 @@ def skip(iterable, count):
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
 def skipwhile(iterable, pred):
-    pred = Function(pred or utils.always(True))
+    pred = Function(pred or utils.always(True), arity=1)
     return itertools.dropwhile(pred, iterable)
 
 @extensionmethod(Enumerable)
@@ -219,7 +219,7 @@ def take(iterable, count):
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
 def takewhile(iterable, pred):
-    pred = Function(pred or utils.always(True))
+    pred = Function(pred or utils.always(True), arity=1)
     return itertools.takewhile(pred, iterable)
 
 
@@ -237,17 +237,16 @@ def groupjoin(outer, inner, outerkey, innerkey, result):
 
 # Grouping Operations {{{1
 @extensionmethod(Enumerable)
-@lazymethod(Enumerable)
 def groupby(iterable, key, elem=None, result=None):
-    result = Function(result)
+    result = Function(result, arity=2)
     lookup = tolookup(iterable, key, elem)
-    return select(lookup.items(), lambda k, v: result(k, v))
+    return select(lookup.items(), lambda x: result(x[0], x[1]))
 
 
 # Equality Operations {{{1
 @extensionmethod(Enumerable)
 def sequenceequal(first, second, selector=None):
-    selector = Function(selector)
+    selector = Function(selector, arity=1)
     first, second = compatible.imap(list, [first, second])
     if len(first) != len(second):
         return False
@@ -267,12 +266,12 @@ def elementat(iterable, index, default=_undefined):
 
 @extensionmethod(Enumerable)
 def first(iterable, pred=None, default=_undefined):
-    pred = Function(pred or utils.always(True))
+    pred = Function(pred or utils.always(True), arity=1)
     return where(iterable, pred).elementat(0, default)
 
 @extensionmethod(Enumerable)
 def last(iterable, pred=None, default=_undefined):
-    pred = Function(pred or utils.always(True))
+    pred = Function(pred or utils.always(True), arity=1)
     return reverse(iterable).first(pred, default)
 
 @extensionmethod(Enumerable)
@@ -303,14 +302,14 @@ def tolist(iterable):
 
 @extensionmethod(Enumerable)
 def todict(iterable, key=None, elem=None):
-    key = Function(key)
-    elem = Function(elem)
+    key = Function(key, arity=1)
+    elem = Function(elem, arity=1)
     return dict([(key(item), elem(item)) for item in iterable])
 
 @extensionmethod(Enumerable)
 def tolookup(iterable, key=None, elem=None):
-    key = Function(key)
-    elem = Function(elem)
+    key = Function(key, arity=1)
+    elem = Function(elem, arity=1)
     lookup = dict()
     for item in iterable:
         k = key(item)
@@ -330,8 +329,8 @@ def concat(iterable, *iterables):
 # Aggregation Operations {{{1
 @extensionmethod(Enumerable)
 def aggregate(iterable, func, selector=None, seed=_undefined):
-    func = Function(func)
-    selector = Function(selector)
+    func = Function(func, arity=1)
+    selector = Function(selector, arity=1)
     if seed is _undefined:
         return selector(compatible.reduce(func, iterable))
     else:
@@ -344,7 +343,7 @@ def average(iterable, selector=None):
 
 @extensionmethod(Enumerable)
 def count(iterable, pred=None):
-    pred = Function(pred or utils.always(True))
+    pred = Function(pred or utils.always(True), arity=1)
     return compatible.reduce(lambda n, _: n + 1, where(iterable, pred), 0)
 
 @extensionmethod(Enumerable)
@@ -363,14 +362,14 @@ def sum(iterable, selector=None):
 # Action Operations {{{1
 @extensionmethod(Enumerable)
 def foreach(iterable, action):
-    action = Function(action)
+    action = Function(action, arity=1)
     for item in iterable:
         action(item)
 
 @extensionmethod(Enumerable)
 @lazymethod(Enumerable)
 def do(iterable, action):
-    action = Function(action)
+    action = Function(action, arity=1)
     for item in iterable:
         action(item)
         yield item

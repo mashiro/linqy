@@ -24,7 +24,7 @@ class Evaluator(object):
     def __call__(self, *args, **kwargs):
         # setup placeholders
         self.locals.update(kwargs)
-        for (i, arg) in enumerate(args[:len(__placeholders__)]):
+        for i, arg in enumerate(args[:len(__placeholders__)]):
              for placeholder in __placeholders__[i]:
                  self.locals[placeholder] = arg
 
@@ -35,29 +35,45 @@ class Evaluator(object):
 class Function(object):
     ''' function wrapper '''
 
-    def __init__(self, func):
-        self.index = 0
+    def __init__(self, func, arity=None):
+        self.arity = arity
+        self.index = None
+
         if isinstance(func, Function):
+            # Function object
             self.is_none = func.is_none
             self.func = func
             self.spec = func.spec
-            self.arity = func.arity
+            if arity is None:
+                self.arity = func.arity
+            self.with_index = func.with_index
         elif isinstance(func, compatible.basestring):
+            # string eval
             self.is_none = False
             self.func = Evaluator(func)
             self.spec = None
-            self.arity = len(__placeholders__)
-        else:
-            if func is None or func is _undefined:
-                self.is_none = True
-                self.func = utils.identity
-            else:
-                self.is_none = False
-                self.func = func
+            self.with_index = True
+        elif func is None or func is _undefined:
+            # identity function
+            self.is_none = True
+            self.func = utils.identity
             self.spec = inspect.getargspec(self.func)
-            self.arity = len(self.spec[0])
+            self.with_index = False
+        else:
+            # user function
+            self.is_none = False
+            self.func = func
+            self.spec = inspect.getargspec(self.func)
+
+            func_arity = len(self.spec[0])
             if inspect.ismethod(self.func):
-                self.arity -= 1 # remove self or cls
+                func_arity -= 1
+            if self.arity is None:
+                self.arity = func_arity
+            self.with_index = self.arity < func_arity
+
+        if self.with_index:
+            self.index = 0
 
     def __bool__(self):
         return not self.is_none
@@ -65,14 +81,16 @@ class Function(object):
     __nonzero__ = __bool__
 
     def __call__(self, *args, **kwargs):
-        if self.spec and self.spec[1] is None: # varargs is None
-            if len(args) > self.arity:
+        if self.arity or self.spec and self.spec[0] is None: # varargs is None
+            if self.arity != len(args):
                 message = 'operation expected at most %d or %d (with index) arguments, demand %d' % (len(args), len(args) + 1, self.arity)
                 raise TypeError(message)
 
-        args += (self.index,)
-        self.index += 1
-        return self.func(*args[:self.arity], **kwargs)
+        if self.with_index:
+            args += (self.index,)
+            self.index += 1
+
+        return self.func(*args, **kwargs)
 
 
 def Q(source, globals=None, locals=None):

@@ -21,10 +21,12 @@ def always(value):
         return value
     return inner
 
-def identity(value):
+def identity(*args):
     ''' return identity value '''
-    return value
-
+    if len(args) == 1:
+        return args[0]
+    else:
+        return args
 
 def isgenerator(object):
     ''' return true if the object is a generator. '''

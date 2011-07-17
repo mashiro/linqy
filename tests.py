@@ -23,18 +23,79 @@ class FunctionTests(unittest.TestCase): # {{{1
     def test_identity(self):
         f = linqy.Function(None)
         self.assertFalse(f)
-        self.assertEqual(f.arity, 1)
-        self.assertEqual(f.index, 0)
+        self.assertEqual(f.arity, None)
+        self.assertEqual(f.index, None)
         self.assertEqual(f(2), 2)
-        self.assertEqual(f.index, 1)
+        self.assertEqual(f(2,3), (2,3))
+        self.assertEqual(f(2,3,4), (2,3,4))
+        self.assertEqual(f.index, None)
 
-    def test_lambda(self):
+    def test_identity_arity1(self):
+        f = linqy.Function(None, arity=1)
+        self.assertFalse(f)
+        self.assertEqual(f.arity, 1)
+        self.assertEqual(f.index, None)
+        self.assertEqual(f(2), 2)
+        self.assertRaises(TypeError, lambda: f(2,3))
+        self.assertRaises(TypeError, lambda: f(2,3,4))
+        self.assertEqual(f.index, None)
+
+    def test_identity_arity2(self):
+        f = linqy.Function(None, arity=2)
+        self.assertFalse(f)
+        self.assertEqual(f.arity, 2)
+        self.assertEqual(f.index, None)
+        self.assertRaises(TypeError, lambda: f(2))
+        self.assertEqual(f(2,3), (2,3))
+        self.assertRaises(TypeError, lambda: f(2,3,4))
+        self.assertEqual(f.index, None)
+
+
+    def test_lambda_arity1(self):
+        f = linqy.Function(lambda x: x * 2)
+        self.assertTrue(f)
+        self.assertEqual(f.arity, 1)
+        self.assertEqual(f.index, None)
+        self.assertEqual(f(2), 4)
+        self.assertRaises(TypeError, lambda: f(2,3))
+        self.assertRaises(TypeError, lambda: f(2,3,4))
+        self.assertEqual(f.index, None)
+
+    def test_lambda_arity2(self):
         f = linqy.Function(lambda x, y: x * y)
         self.assertTrue(f)
         self.assertEqual(f.arity, 2)
-        self.assertEqual(f.index, 0)
+        self.assertEqual(f.index, None)
+        self.assertRaises(TypeError, lambda: f(2))
         self.assertEqual(f(2,3), 6)
+        self.assertRaises(TypeError, lambda: f(2,3,4))
+        self.assertEqual(f.index, None)
+
+
+    def test_lambda_arity1_with_index(self):
+        f = linqy.Function(lambda x, i: (x, i), arity=1)
+        self.assertTrue(f)
+        self.assertEqual(f.arity, 1)
+        self.assertEqual(f.index, 0)
+        self.assertEqual(f(2), (2,0))
         self.assertEqual(f.index, 1)
+        self.assertEqual(f(2), (2,1))
+        self.assertEqual(f.index, 2)
+        self.assertRaises(TypeError, lambda: f(2,3))
+        self.assertRaises(TypeError, lambda: f(2,3,4))
+
+    def test_lambda_arity2_with_index(self):
+        f = linqy.Function(lambda x, y, i: (x, y, i), arity=2)
+        self.assertTrue(f)
+        self.assertEqual(f.arity, 2)
+        self.assertEqual(f.index, 0)
+        self.assertRaises(TypeError, lambda: f(2))
+        self.assertEqual(f(2,3), (2,3,0))
+        self.assertEqual(f.index, 1)
+        self.assertEqual(f(2,3), (2,3,1))
+        self.assertEqual(f.index, 2)
+        self.assertRaises(TypeError, lambda: f(2,3,4))
+
 
     def test_method(self):
         class inner(object):
@@ -43,9 +104,9 @@ class FunctionTests(unittest.TestCase): # {{{1
         f = linqy.Function(inner().f)
         self.assertTrue(f)
         self.assertEqual(f.arity, 2)
-        self.assertEqual(f.index, 0)
+        self.assertEqual(f.index, None)
         self.assertEqual(f(2,3), 6)
-        self.assertEqual(f.index, 1)
+        self.assertEqual(f.index, None)
 
     def test_eval(self):
         f = linqy.Function('_1 * _2')
@@ -328,7 +389,11 @@ class JoinTests(unittest.TestCase): # {{{1
 
 
 class GroupingTests(unittest.TestCase): # {{{1
-    pass
+    def test_groupby(self):
+        e = linqy.make(range(0, 10))
+        groups = e.tolookup(lambda x: x % 2)
+        self.assertEqual(groups[False], [0, 2, 4, 6, 8])
+        self.assertEqual(groups[True], [1, 3, 5, 7, 9])
 
 
 class EqualityTests(unittest.TestCase): # {{{1
