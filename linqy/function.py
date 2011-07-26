@@ -35,62 +35,72 @@ class Evaluator(object):
 class Function(object):
     ''' function wrapper '''
 
-    def __init__(self, func, arity=None):
+    def __init__(self, wrapped=None, arity=None):
         self.arity = arity
-        self.index = None
 
-        if isinstance(func, Function):
-            # Function object
-            self.is_none = func.is_none
-            self.func = func
-            self.spec = func.spec
-            if arity is None:
-                self.arity = func.arity
-            self.with_index = func.with_index
-        elif isinstance(func, compatible.basestring):
-            # string eval
-            self.is_none = False
-            self.func = Evaluator(func)
-            self.spec = None
-            self.with_index = True
-        elif func is None or func is _undefined:
-            # identity function
-            self.is_none = True
+        if wrapped is None or wrapped is _undefined:
+            # identity
             self.func = utils.identity
-            self.spec = inspect.getargspec(self.func)
-            self.with_index = False
-        else:
-            # user function
-            self.is_none = False
-            self.func = func
-            self.spec = inspect.getargspec(self.func)
-
-            func_arity = len(self.spec[0])
-            if inspect.ismethod(self.func):
-                func_arity -= 1
-            if self.arity is None:
-                self.arity = func_arity
-            self.with_index = self.arity < func_arity
-
-        if self.with_index:
+            self.func_arity = self.arity
+            self.index = None
+        elif isinstance(wrapped, Function):
+            # function object
+            self.func = wrapped.func
+            self.func_arity = wrapped.func_arity
+            if wrapped.index is None:
+                self.index = None
+            else:
+                self.index = 0
+        elif isinstance(wrapped, compatible.basestring):
+            # string evaluator
+            self.func = Evaluator(wrapped)
+            self.func_arity = None
             self.index = 0
+        elif inspect.isbuiltin(wrapped) or inspect.ismethoddescriptor(wrapped):
+            # built-in function
+            self.func = wrapped
+            self.func_arity = None
+            self.index = None
+        else:
+            # user defined function
+            self.func = wrapped
+
+            spec = inspect.getargspec(wrapped)
+            args = spec[0]
+            varargs = spec[1]
+
+            if varargs is not None:
+                self.func_arity = None
+                self.index = 0
+            else:
+                self.func_arity = len(args)
+                if inspect.ismethod(wrapped):
+                    self.func_arity -= 1 # reject self or cls
+
+                if self.arity is not None and self.arity < self.func_arity:
+                    self.index = 0
+                else:
+                    self.index = None
 
     def __bool__(self):
-        return not self.is_none
+        return not self.func is utils.identity
 
     __nonzero__ = __bool__
 
     def __call__(self, *args, **kwargs):
-        if self.arity or self.spec and self.spec[0] is None: # varargs is None
-            if self.arity != len(args):
-                message = 'operation expected at most %d or %d (with index) arguments, demand %d' % (len(args), len(args) + 1, self.arity)
-                raise TypeError(message)
-
-        if self.with_index:
+        if self.index is not None:
             args += (self.index,)
+
+        if self.func_arity is not None and self.func_arity != len(args):
+            raise TypeError('operation expected at most %d arguments, demand %d' % (len(args), self.func_arity))
+
+        result = self.func(*args, **kwargs)
+
+        if self.index is not None:
             self.index += 1
 
-        return self.func(*args, **kwargs)
+        return result
+
 
 
 def Q(source, globals=None, locals=None):
