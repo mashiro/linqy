@@ -1,17 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from setuptools import setup, find_packages
-import linqy
+
+from setuptools import setup
+from linqy import meta
 
 setup(name='linqy',
-      version=linqy.__version__,
-      description=linqy.__doc__,
-      license=linqy.__license__,
-      author=linqy.__author__,
-      author_email=linqy.__email__,
-      url=linqy.__url__,
-      keywords='linq enumerable iterable library',
-      packages=find_packages(),
-      install_requires=['setuptools'],
+      version=meta.__version__,
+      description=meta.__doc__,
+      author=meta.__author__,
+      author_email=meta.__email__,
+      url=meta.__url__,
+      license=meta.__license__,
+      packages=['linqy'],
+      keywords=['LINQ', 'Enumerable', 'Iterable', 'Library'],
       test_suite='tests.suite')
-
