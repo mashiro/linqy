@@ -25,15 +25,9 @@ class SequenceEnumerable(Enumerable): # {{{1
 
     def __init__(self, iterable):
         Enumerable.__init__(self, utils.tosequence(iterable))
-        self._iter = iter(self._source)
 
     def __iter__(self):
-        return SequenceEnumerable(self._source)
-
-    def __next__(self):
-        return compatible.next(self._iter)
-
-    next = __next__
+        return iter(self._source)
 
     def __len__(self):
         return self._source.__len__()
